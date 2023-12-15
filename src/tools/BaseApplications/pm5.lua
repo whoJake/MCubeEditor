@@ -37,7 +37,7 @@ project (prjConsoleApplication)
     }
 
     filter "system:windows"
-        cppdialect "C++17"
+        cppdialect "C++20"
         staticruntime "off"
         runtime "Release"
         buildoptions "/MD"
@@ -105,7 +105,7 @@ project (prjWindowedApplication)
     }
 
     filter "system:windows"
-        cppdialect "C++17"
+        cppdialect "C++20"
         staticruntime "off"
         runtime "Release"
         buildoptions "/MD"
@@ -138,4 +138,4 @@ project (prjWindowedApplication)
         }
         targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
         optimize "On"
-        
+ 

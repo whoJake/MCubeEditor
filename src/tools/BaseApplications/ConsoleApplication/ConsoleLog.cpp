@@ -1,6 +1,7 @@
 #include "jclog.h"
 
 #include <iostream>
+#include <format>
 #include <sstream>
 #include <iomanip>
 #include <ctime>
@@ -11,29 +12,29 @@ namespace jclog
 static void pad_stringstream(std::stringstream* ss, uint32_t padWidth)
 {
     for( uint32_t i = 0; i < padWidth; i++ )
-        *ss << " ";
+        (*ss) << " ";
 }
 
 ConsoleLog::ConsoleLog(bool hasTimestamp, const char* timestampFormat):
-    m_HasTimestamp(hasTimestamp),
-    m_TimestampFormat(timestampFormat)
+    m_hasTimestamp(hasTimestamp),
+    m_timestampFormat(timestampFormat)
 { 
-    m_PadWidth += 8; // [{5 spaces}]{1 space}
-    if( m_HasTimestamp )
-        m_PadWidth += strlen(timestampFormat) + 3; // []{1 space}
+    m_padWidth += 8; // [{5 spaces}]{1 space}
+    if( m_hasTimestamp )
+        m_padWidth += (uint32_t)strlen(timestampFormat) + 3; // []{1 space}
 }
 
 ConsoleLog::~ConsoleLog()
 { }
 
-void ConsoleLog::log(Level level, const char* functionName, const char* fmt, va_list args)
+void ConsoleLog::log(Level level, const char* functionName, const char* logstr)
 {
-    if( m_HasTimestamp )
+    if( m_hasTimestamp )
     {
         time_t time = std::time(nullptr);
         std::tm timeStruct = *std::localtime(&time);
 
-        std::cout << "[" << std::put_time(&timeStruct, m_TimestampFormat) << "] ";
+        std::cout << "[" << std::put_time(&timeStruct, m_timestampFormat) << "] ";
     }
 
     std::cout << "[";
@@ -69,23 +70,15 @@ void ConsoleLog::log(Level level, const char* functionName, const char* fmt, va_
         break;
     }
 
-    std::cout << level_prefix(level) << LOG_COLOR_RESET << "] ";
-
-    vprintf(fmt, args);
-    std::cout << std::endl;
+    std::cout << level_prefix(level) << LOG_COLOR_RESET << "] " << logstr << std::endl;
 }
 
-void ConsoleLog::log(Level level, const char* functionName, std::exception exception, const char* fmt, va_list args)
+void ConsoleLog::log(Level level, const char* functionName, std::exception exception, const char* logstr)
 {
-    log(level, functionName, fmt, args);
-
-    std::stringstream ss;
-    ss << "Exception:\n";
-    pad_stringstream(&ss, m_PadWidth);
-    ss << "\t%s";
+    log(level, functionName, logstr);
 
     // Exception formatting?
-    this->none(functionName, ss.str().c_str(), exception.what());
+    this->none(functionName, "Exception:\n{}", exception.what());
 }
 
 } // jclog
