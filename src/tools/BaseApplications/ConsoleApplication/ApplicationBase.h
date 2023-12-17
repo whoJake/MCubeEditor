@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "CommandArgs.h"
 
 enum ExitFlagBits : int32_t
 {
@@ -12,23 +13,17 @@ typedef int32_t ExitFlags;
 class ApplicationBase
 {
 public:
-    ApplicationBase() = delete;
-    ~ApplicationBase();
+    ApplicationBase();
+    virtual ~ApplicationBase();
     ApplicationBase(ApplicationBase&&) = delete;
     ApplicationBase(const ApplicationBase&) = delete;
 
-    virtual ExitFlags app_main() final;
-    virtual void app_shutdown(ExitFlags exitcode = 0) final;
+    virtual ExitFlags run(int argc, const char* argv[]) final;
 
-    virtual ExitFlags on_app_main() { }
-    virtual ExitFlags on_app_shutdown() { }
-protected:
-    ApplicationBase(const std::vector<std::string> argumentList);
+    virtual ExitFlags app_main() = 0;
+    virtual void app_shutdown(ExitFlags exitFlags = 0) final;
+    virtual void on_app_shutdown() { }
 private:
-    bool m_Running;
-    ExitFlags m_Exitflags;
+    ExitFlags m_exitFlags;
+    CommandArgs m_commandArgs;
 };
-
-#ifndef APP_NO_MAIN
-static ApplicationBase* create_application(const std::vector<std::string> args);
-#endif

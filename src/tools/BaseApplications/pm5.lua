@@ -12,11 +12,12 @@ workspace "BaseApplications"
 prjConsoleApplication = "ConsoleApplication"
 prjWindowedApplication = "WindowedApplication"
 
+vendordir = "../../3rdparty/"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/"
 
 project (prjConsoleApplication)
     location "%{prj.name}"
-    kind     "ConsoleApp"
+    kind     "StaticLib"
     language "C++"
 
     targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
@@ -91,7 +92,8 @@ project (prjWindowedApplication)
     includedirs
     {
         "%{prj.name}",
-        "%{prjConsoleApplication}"
+        "%{prjConsoleApplication}",
+        "%{vendordir}"
     }
 
     dependson
@@ -99,9 +101,15 @@ project (prjWindowedApplication)
         "%{prjConsoleApplication}",
     }
 
+    libdirs
+    {
+		"%{vendordir}/glfw/lib-vc2022",
+    }
+
     links
     {
-        "%{prjConsoleApplication}"
+        "%{prjConsoleApplication}",
+        "glfw3_mt",
     }
 
     filter "system:windows"

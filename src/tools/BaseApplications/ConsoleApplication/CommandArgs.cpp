@@ -1,20 +1,21 @@
 #include "CommandArgs.h"
 #include <sstream>
 
-CommandArgs::CommandArgs(const std::vector<std::string>& argList)
+CommandArgs::CommandArgs(const std::vector<std::string>& argList):
+    m_argMap()
 {
 
 }
 
 bool CommandArgs::has_argument(const std::string& argument) const
 {
-    return m_ArgMap.find(argument) == m_ArgMap.end();
+    return m_argMap.find(argument) == m_argMap.end();
 }
 
 std::vector<std::string> CommandArgs::get_options(const std::string& argument) const
 {
-    auto& itFind = m_ArgMap.find(argument);
-    if (itFind == m_ArgMap.end()) {
+    const auto& itFind = m_argMap.find(argument);
+    if (itFind == m_argMap.end()) {
         std::stringstream ss;
         ss << "Argument " << argument << " does not exist.";
 
