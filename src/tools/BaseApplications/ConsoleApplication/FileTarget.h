@@ -1,18 +1,18 @@
 #pragma once
 
-#include "Log.h"
+#include "LogTarget.h"
 #include <fstream>
 
 namespace jclog
 {
 
-class FileLog: public Log
+class FileTarget: public LogTarget
 {
 public:
-    FileLog(const char* logDirectory);
-    ~FileLog();
-    FileLog(FileLog&&) = delete;
-    FileLog(const FileLog&) = delete;
+    FileTarget(const char* logDirectory);
+    ~FileTarget();
+    FileTarget(FileTarget&&) = delete;
+    FileTarget(const FileTarget&) = delete;
 
 protected:
     void log(Level level, const char* functionName, const char* logstr);

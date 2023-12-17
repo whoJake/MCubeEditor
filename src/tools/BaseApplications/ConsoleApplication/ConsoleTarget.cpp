@@ -1,4 +1,4 @@
-#include "jclog.h"
+#include "ConsoleTarget.h"
 
 #include <iostream>
 #include <format>
@@ -15,7 +15,7 @@ static void pad_stringstream(std::stringstream* ss, uint32_t padWidth)
         (*ss) << " ";
 }
 
-ConsoleLog::ConsoleLog(bool hasTimestamp, const char* timestampFormat):
+ConsoleTarget::ConsoleTarget(bool hasTimestamp, const char* timestampFormat):
     m_hasTimestamp(hasTimestamp),
     m_timestampFormat(timestampFormat)
 { 
@@ -24,10 +24,10 @@ ConsoleLog::ConsoleLog(bool hasTimestamp, const char* timestampFormat):
         m_padWidth += (uint32_t)strlen(timestampFormat) + 3; // []{1 space}
 }
 
-ConsoleLog::~ConsoleLog()
+ConsoleTarget::~ConsoleTarget()
 { }
 
-void ConsoleLog::log(Level level, const char* functionName, const char* logstr)
+void ConsoleTarget::log(Level level, const char* functionName, const char* logstr)
 {
     if( m_hasTimestamp )
     {
@@ -73,12 +73,13 @@ void ConsoleLog::log(Level level, const char* functionName, const char* logstr)
     std::cout << level_prefix(level) << LOG_COLOR_RESET << "] " << logstr << std::endl;
 }
 
-void ConsoleLog::log(Level level, const char* functionName, std::exception exception, const char* logstr)
+void ConsoleTarget::log(Level level, const char* functionName, std::exception exception, const char* logstr)
 {
     log(level, functionName, logstr);
 
     // Exception formatting?
-    this->none(functionName, "Exception:\n{}", exception.what());
+    std::string exStr = std::format("Exception:\n{}", exception.what());
+    this->log(Level::NONE, functionName, exStr.c_str());
 }
 
 } // jclog

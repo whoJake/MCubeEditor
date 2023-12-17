@@ -1,5 +1,5 @@
 #pragma once
 
 #include "Log.h"
-#include "FileLog.h"
-#include "ConsoleLog.h"
+#include "ConsoleTarget.h"
+#include "FileTarget.h"

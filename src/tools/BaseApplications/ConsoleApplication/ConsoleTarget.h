@@ -1,17 +1,17 @@
 #pragma once
-#include "Log.h"
+#include "LogTarget.h"
 
 namespace jclog
 {
 
-class ConsoleLog: public Log
+class ConsoleTarget: public LogTarget
 {
 public:
-    ConsoleLog(bool hasTimestamp = true, const char* timestampFormat = "%H:%M:%S");
+    ConsoleTarget(bool hasTimestamp = true, const char* timestampFormat = "%H:%M:%S");
     //ConsoleLog(bool hasTimestamp = true, const char* timestampFormat = "%Y-%m-%d %H:%M:%S");
-    ~ConsoleLog();
-    ConsoleLog(ConsoleLog&&) = delete;
-    ConsoleLog(const ConsoleLog&) = delete;
+    ~ConsoleTarget();
+    ConsoleTarget(ConsoleTarget&&) = delete;
+    ConsoleTarget(const ConsoleTarget&) = delete;
 
 protected:
     void log(Level level, const char* functionName, const char* logstr);

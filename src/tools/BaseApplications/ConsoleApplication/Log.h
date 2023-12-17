@@ -1,71 +1,30 @@
 #pragma once
 
-#include <exception>
-#include <cstdarg>
-#include <format>
-#include <string>
+#include "LogTarget.h"
 
 namespace jclog
 {
 
-#define LOG_COLOR_RESET "\033[0m"
-#define LOG_COLOR_BOLD "\033[1m"
-#define LOG_COLOR_GRAY "\033\30"
-#define LOG_COLOR_RED "\033[31m"
-#define LOG_COLOR_GREEN "\033[32m"
-#define LOG_COLOR_YELLOW "\033[33m"
-#define LOG_COLOR_BLUE "\033[34m"
-#define LOG_COLOR_MAGENTA "\033[35m"
-#define LOG_COLOR_CYAN "\033[36m"
-#define LOG_COLOR_WHITE "\033[37m"
-
-enum class Level
-{
-    NONE,
-    TRACE,
-    DEBUG,
-    PROFILE,
-    INFO,
-    WARN,
-    ERROR,
-    EVENT,
-    EXCEPTION
-};
-
-static constexpr const char* level_prefix(Level level)
-{
-    switch( level )
-    {
-    case Level::NONE:
-        return "     ";
-    case Level::TRACE:
-        return "trace";
-    case Level::DEBUG:
-        return "debug";
-    case Level::PROFILE:
-        return "prof ";
-    case Level::INFO:
-        return "info ";
-    case Level::WARN:
-        return "warn ";
-    case Level::ERROR:
-        return "error";
-    case Level::EVENT:
-        return "event";
-    case Level::EXCEPTION:
-        return "ex   ";
-    default:
-        return "     ";
-    }
-}
-
 class Log
 {
 public:
-    Log() { };
-    virtual ~Log() { }
+    Log():
+        m_targets()
+    { };
+    ~Log()
+    { 
+        for( LogTarget*& target : m_targets )
+        {
+            delete target;
+        }
+    }
     Log(Log&&) = delete;
     Log(const Log&) = delete;
+
+    void register_target(LogTarget* target)
+    {
+        m_targets.push_back(target);
+    }
 
     template<typename... A>
     void none(const char* functionName, const char* fmt, A&&... args)
@@ -137,9 +96,24 @@ public:
         log(Level::NONE, functionName, exception, str.c_str());
     }
 
-protected:
-    virtual void log(Level level, const char* functionName, const char* logstr) = 0;
-    virtual void log(Level level, const char* functionName, std::exception exception, const char* logstr) = 0;
+    void log(Level level, const char* functionName, const char* logstr)
+    {
+        for( LogTarget*& target : m_targets )
+        {
+            target->log(level, functionName, logstr);
+        }
+    }
+
+    void log(Level level, const char* functionName, std::exception ex, const char* logstr)
+    {
+        for( LogTarget*& target : m_targets )
+        {
+            target->log(level, functionName, ex, logstr);
+        }
+    }
+
+private:
+    std::vector<LogTarget*> m_targets;
 };
 
 } // jclog
