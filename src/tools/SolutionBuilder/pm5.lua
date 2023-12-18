@@ -10,7 +10,7 @@ workspace "SolutionBuilder"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/"
 powershell = "%windir%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe "
-deploydir = "%{wks.location}/../../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}"
+deploydir = "%{wks.location}/../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}"
 
 project "SolutionBuilderApp"
     location "SolutionBuilder"
