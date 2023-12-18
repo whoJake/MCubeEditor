@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "CommandArgs.h"
+#include "Config.h"
+#include "logging/jclog.h"
 
 enum ExitFlagBits : int32_t
 {
@@ -18,12 +19,16 @@ public:
     ApplicationBase(ApplicationBase&&) = delete;
     ApplicationBase(const ApplicationBase&) = delete;
 
-    virtual ExitFlags run(int argc, const char* argv[]) final;
+    virtual int run(int argc, const char* argv[]) final;
 
     virtual ExitFlags app_main() = 0;
     virtual void app_shutdown(ExitFlags exitFlags = 0) final;
     virtual void on_app_shutdown() { }
+
+    jclog::Log& get_log();
+protected:
+    jclog::Log m_log;
 private:
     ExitFlags m_exitFlags;
-    CommandArgs m_commandArgs;
+    Config m_config;
 };
