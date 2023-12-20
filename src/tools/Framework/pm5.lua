@@ -10,7 +10,6 @@ workspace "Framework"
 
 -- Project names
 prjBase = "Base"
-prjConfiguration = "Configuration"
 prjExperimental = "Experimental"
 
 vendordir = "../../3rdparty/"
@@ -42,7 +41,6 @@ project (prjBase)
 
     dependson
     {
-        "%{prjConfiguration}",
     }
 
     libdirs
@@ -52,7 +50,6 @@ project (prjBase)
 
     links
     {
-        "%{prjConfiguration}",
         "glfw3_mt",
     }
 
@@ -90,64 +87,7 @@ project (prjBase)
         }
         targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
         optimize "On"
-        
-project (prjConfiguration)
-    location "%{prj.name}"
-    kind     "StaticLib"
-    language "C++"
-
-    targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
-    objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. outputdir)
-
-    files
-    {
-        "%{prj.name}/**.h",
-        "%{prj.name}/**.cpp",
-        "%{prj.name}/**.hpp",
-
-        "pm5.lua"
-    }
-
-    includedirs
-    {
-        "%{prj.name}",
-    }
-
-    filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "off"
-        runtime "Release"
-        buildoptions "/MD"
-        systemversion "latest"
-
-        defines
-        {
-            "PLATFORM_WINDOWS"
-        }
-
-    filter "configurations:Debug"
-        defines
-        {
-            "CFG_DEBUG"
-        }
-        symbols "On"
-
-    filter "configurations:Release"
-        defines
-        {
-            "CFG_RELEASE"
-        }
-        optimize "On"
-
-    filter "configurations:Deploy"
-        defines
-        {
-            "CFG_RELEASE",
-            "CFG_DEPLOY"
-        }
-        targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
-        optimize "On"
- 
+      
 project (prjExperimental)
     location "%{prj.name}"
     kind     "ConsoleApp"
@@ -169,20 +109,17 @@ project (prjExperimental)
     {
         "%{prj.name}",
         "%{prjBase}",
-        "%{prjConfiguration}",
         "%{vendordir}"
     }
 
     dependson
     {
         "%{prjBase}",
-        "%{prjConfiguration}",
     }
 
     links
     {
         "%{prjBase}",
-        "%{prjConfiguration}",
     }
 
     filter "system:windows"

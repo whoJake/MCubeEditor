@@ -1,5 +1,6 @@
 #pragma once
 #include "ArgProvider.h"
+#include "Environment.h"
 
 class Config
 {
@@ -8,8 +9,8 @@ public:
     ~Config();
 
     ArgProvider& get_arg_provider();
-    //Environment& get_environment();
+    Environment& get_environment();
 private:
     ArgProvider m_argProvider;
-    //Environment m_environment;
+    Environment m_environment;
 };
