@@ -1,8 +1,10 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "Config.h"
+#include "configuration/Config.h"
 #include "logging/jclog.h"
+
+class Environment;
 
 enum ExitFlagBits : int32_t
 {
@@ -26,9 +28,12 @@ public:
     virtual void on_app_shutdown() { }
 
     jclog::Log& get_log();
+
+    Config& get_config();
+    Environment& get_environment();
 protected:
-    jclog::Log m_log;
 private:
     ExitFlags m_exitFlags;
     Config m_config;
+    jclog::Log m_log;
 };

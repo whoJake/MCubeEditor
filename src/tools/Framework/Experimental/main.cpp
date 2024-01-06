@@ -3,5 +3,7 @@
 int main(int argc, const char* argv[])
 {
     WindowedApplication app;
-    return app.run(argc, argv);
+    int exitcode = app.run(argc, argv);
+
+    return exitcode;
 }
