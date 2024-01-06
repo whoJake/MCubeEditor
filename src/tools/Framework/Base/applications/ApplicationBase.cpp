@@ -58,7 +58,19 @@ void ApplicationBase::app_shutdown(ExitFlags exitFlags)
     on_app_shutdown();
 }
 
+Config& ApplicationBase::get_config()
+{
+    return m_config;
+}
+
+Environment& ApplicationBase::get_environment()
+{
+    return m_config.get_environment();
+}
+
 jclog::Log& ApplicationBase::get_log()
 {
     return m_log;
 }
+
+

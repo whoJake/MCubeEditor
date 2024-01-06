@@ -14,8 +14,8 @@ public:
     ConsoleTarget(const ConsoleTarget&) = delete;
 
 protected:
-    void log(Level level, const char* functionName, const char* logstr);
-    void log(Level level, const char* functionName, std::exception exception, const char* logstr);
+    void log(Level level, const char* functionName, const char* logstr) const;
+    void log(Level level, const char* functionName, std::exception exception, const char* logstr) const;
 
 private:
     bool m_hasTimestamp;

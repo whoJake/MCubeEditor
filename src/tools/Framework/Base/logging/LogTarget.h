@@ -64,8 +64,8 @@ class LogTarget
 public:
     virtual ~LogTarget() { };
 
-    virtual void log(Level level, const char* functionName, const char* logstr) = 0;
-    virtual void log(Level level, const char* functionName, std::exception exception, const char* logstr) = 0;
+    virtual void log(Level level, const char* functionName, const char* logstr) const = 0;
+    virtual void log(Level level, const char* functionName, std::exception exception, const char* logstr) const = 0;
 protected:
     LogTarget() { };
 };

@@ -27,7 +27,7 @@ ConsoleTarget::ConsoleTarget(bool hasTimestamp, const char* timestampFormat):
 ConsoleTarget::~ConsoleTarget()
 { }
 
-void ConsoleTarget::log(Level level, const char* functionName, const char* logstr)
+void ConsoleTarget::log(Level level, const char* functionName, const char* logstr) const
 {
     if( m_hasTimestamp )
     {
@@ -73,7 +73,7 @@ void ConsoleTarget::log(Level level, const char* functionName, const char* logst
     std::cout << level_prefix(level) << LOG_COLOR_RESET << "] " << logstr << std::endl;
 }
 
-void ConsoleTarget::log(Level level, const char* functionName, std::exception exception, const char* logstr)
+void ConsoleTarget::log(Level level, const char* functionName, std::exception exception, const char* logstr) const
 {
     log(level, functionName, logstr);
 

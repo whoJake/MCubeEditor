@@ -32,13 +32,13 @@ FileTarget::~FileTarget()
     m_logFile.close();
 }
 
-void FileTarget::log(Level level, const char* functionName, const char* logstr)
+void FileTarget::log(Level level, const char* functionName, const char* logstr) const
 {
     auto epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
     m_logFile << epoch.count() << "," << functionName << "," << logstr << "\n";
 }
 
-void FileTarget::log(Level level, const char* functionName, std::exception exception, const char* logstr)
+void FileTarget::log(Level level, const char* functionName, std::exception exception, const char* logstr) const
 {
     std::string combine = std::format("{},{}", logstr, exception.what());
     log(level, functionName, combine.c_str());
