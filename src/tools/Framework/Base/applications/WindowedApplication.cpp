@@ -39,6 +39,7 @@ ExitFlags WindowedApplication::app_main()
     winProperties.extent = { 500, 500 };
     winProperties.resizable = true;
     winProperties.vsync = Window::VSync::Default;
+    winProperties.eventfn = BIND_EVENT_FN(WindowedApplication::on_event);
 
     Window* glfw = new WindowGlfw(get_log(), winProperties);
     glfw->set_title("This is the title.");
@@ -51,4 +52,9 @@ ExitFlags WindowedApplication::app_main()
     delete glfw;
 
     return ExitFlagBits::Success;
+}
+
+void WindowedApplication::on_event(Event& e)
+{
+    get_log().event(__FUNCTION__, "{}", e.to_str());
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ApplicationBase.h"
-#include "glfw/glfw3.h"
+#include "platform/events/Event.h"
 
 class WindowedApplication: public ApplicationBase
 {
@@ -10,5 +10,7 @@ public:
     ~WindowedApplication();
 
     ExitFlags app_main();
+
+    void on_event(Event& e);
 private:
 };

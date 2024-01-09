@@ -4,42 +4,61 @@
 
 class WindowResizeEvent : public Event {
 public:
-public:
-	WindowResizeEvent(int width, int height) :
-		m_Width(width),
-		m_Height(height) {}
+    WindowResizeEvent(int width, int height) :
+        m_width(width),
+        m_height(height) {}
 
-	inline int GetWidth() const { return m_Width; }
-	inline int GetHeight() const { return m_Height; }
+    inline int get_width() const { return m_width; }
+    inline int get_height() const { return m_height; }
 
-	std::string to_str() const override {
-		std::stringstream result;
-		result << "( " << m_Width << ", " << m_Height << " ) RESIZE";
-		return result.str();
-	}
+    std::string to_str() const override {
+        std::stringstream result;
+        result << "( " << m_width << ", " << m_height << " ) RESIZE";
+        return result.str();
+    }
 
-	EVENT_CLASS_TYPE(WINDOW_RESIZE);
+    EVENT_CLASS_TYPE(EVENT_WINDOW_RESIZE);
 private:
-	int m_Width, m_Height;
+    int m_width, m_height;
+};
+
+class WindowMovedEvent: public Event {
+public:
+    WindowMovedEvent(int x, int y) :
+        m_xPos(x),
+        m_yPos(y) {}
+
+    inline int get_position_x() const { return m_xPos; }
+    inline int get_position_y() const { return m_yPos; }
+
+    std::string to_str() const override {
+        std::stringstream result;
+        result << "( " << m_xPos << ", " << m_yPos << " ) MOVED";
+        return result.str();
+    }
+
+    EVENT_CLASS_TYPE(EVENT_WINDOW_MOVED);
+private:
+    int m_xPos, m_yPos;
 };
 
 class WindowClosedEvent : public Event {
 public:
-	WindowClosedEvent() {}
+    WindowClosedEvent() {}
 
-	EVENT_CLASS_TYPE(WINDOW_CLOSED);
+    EVENT_CLASS_TYPE(EVENT_WINDOW_CLOSED);
 };
 
 class WindowFocusedEvent : public Event {
 public:
-	WindowFocusedEvent() {}
+    WindowFocusedEvent() {}
 
-	EVENT_CLASS_TYPE(WINDOW_FOCUSED);
+    EVENT_CLASS_TYPE(EVENT_WINDOW_FOCUSED);
 };
 
 class WindowUnFocusedEvent : public Event {
 public:
-	WindowUnFocusedEvent() {}
+    WindowUnFocusedEvent() {}
 
-	EVENT_CLASS_TYPE(WINDOW_UNFOCUSED);
+    EVENT_CLASS_TYPE(EVENT_WINDOW_UNFOCUSED);
 };

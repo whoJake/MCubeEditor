@@ -1,4 +1,7 @@
 #include "WindowGlfw.h"
+#include "platform/events/WindowEvent.h"
+#include "platform/events/MouseEvent.h"
+#include "platform/events/KeyEvent.h"
 
 // Really dirty but can't seem to get fnc binding to work since glfw requires a free function
 static jclog::Log* internal_window_log = nullptr;
@@ -62,10 +65,36 @@ void WindowGlfw::set_title(const std::string& title)
     glfwSetWindowTitle(m_handle, title.c_str());
 }
 
-Window::Extent WindowGlfw::resize(const Window::Extent& extent)
+Window::Position WindowGlfw::set_position(const Window::Position& position)
+{
+    glfwSetWindowPos(m_handle, position.x, position.y);
+    int* x = nullptr;
+    int* y = nullptr;
+    glfwGetWindowPos(m_handle, x, y);
+
+    if( x && y )
+    {
+        m_properties.position.x = *x;
+        m_properties.position.y = *y;
+    }
+
+    return m_properties.position;
+}
+
+Window::Extent WindowGlfw::set_size(const Window::Extent& extent)
 {
     glfwSetWindowSize(m_handle, extent.width, extent.height);
-    return extent;
+    int* x = nullptr;
+    int* y = nullptr;
+    glfwGetWindowSize(m_handle, x, y);
+
+    if( x && y )
+    {
+        m_properties.extent.width = *x;
+        m_properties.extent.height = *y;
+    }
+
+    return m_properties.extent;
 }
 
 void WindowGlfw::set_mode(const Window::Mode& mode)
@@ -112,5 +141,118 @@ void WindowGlfw::set_mode(const Window::Mode& mode)
 
 void WindowGlfw::setup_events() const
 {
+    // Window Events
+    {
+        glfwSetWindowCloseCallback(m_handle, [](GLFWwindow* owner){
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
 
+            WindowClosedEvent e;
+            data.eventfn(e);
+        });
+
+        glfwSetWindowPosCallback(m_handle, [](GLFWwindow* owner, int x, int y){ 
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            data.position.x = x;
+            data.position.y = y;
+
+            WindowMovedEvent e(x, y);
+            data.eventfn(e);
+        });
+
+        glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* owner, int width, int height) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            data.extent.width = width;
+            data.extent.height = height;
+
+            WindowResizeEvent e(width, height);
+            data.eventfn(e);
+        });
+
+        glfwSetWindowFocusCallback(m_handle, [](GLFWwindow* owner, int focused) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            if( focused ) {
+                WindowFocusedEvent e;
+                data.eventfn(e);
+            }
+            else {
+                WindowUnFocusedEvent e;
+                data.eventfn(e);
+            }
+        });
+    }
+
+    // Key Events
+    {
+        glfwSetKeyCallback(m_handle, [](GLFWwindow* owner, int key, int scancode, int action, int mods) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            switch( action ) {
+                case GLFW_PRESS:
+                {
+                    KeyPressedEvent e(key, 0);
+                    data.eventfn(e);
+                    break;
+                }
+                case GLFW_RELEASE:
+                {
+                    KeyReleasedEvent e(key);
+                    data.eventfn(e);
+                    break;
+                }
+                case GLFW_REPEAT:
+                {
+                    KeyPressedEvent e(key, 1);
+                    data.eventfn(e);
+                    break;
+                }
+            }
+        });
+
+        glfwSetCharCallback(m_handle, [](GLFWwindow* owner, unsigned int keycode) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            KeyTypedEvent e(keycode);
+            data.eventfn(e);
+        });
+    }
+
+
+    // Mouse Events
+    {
+        glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* owner, int button, int action, int mods) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            switch( action ) {
+            case GLFW_PRESS:
+            {
+                MousePressedEvent e(button, mods);
+                data.eventfn(e);
+                break;
+            }
+            case GLFW_RELEASE:
+            {
+                MouseReleasedEvent e(button);
+                data.eventfn(e);
+                break;
+            }
+            }
+        });
+
+        glfwSetScrollCallback(m_handle, [](GLFWwindow* owner, double xoffset, double yoffset) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            MouseScrolledEvent e(xoffset, yoffset);
+            data.eventfn(e);
+        });
+
+        glfwSetCursorPosCallback(m_handle, [](GLFWwindow* owner, double xpos, double ypos) {
+            Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
+
+            MouseMovedEvent e(xpos, ypos);
+            data.eventfn(e);
+        });
+    }
 }
