@@ -45,7 +45,7 @@ project (prjBase)
 
     libdirs
     {
-		"%{vendordir}/glfw/lib-vc2022",
+        "%{vendordir}/glfw/lib-vc2022",
     }
 
     links
