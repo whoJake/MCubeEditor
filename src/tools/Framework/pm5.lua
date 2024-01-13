@@ -37,7 +37,10 @@ project (prjBase)
         "%{prj.name}",
         "%{prjConfiguration}",
         "%{vendordir}/glfw",
-        "%{vendordir}/vma3.0.1/include"
+        "%{vendordir}/vma3.0.1/include",
+
+        -- vulkan
+        "%VULKAN_SDK%/Include"
     }
 
     dependson
@@ -52,6 +55,9 @@ project (prjBase)
     links
     {
         "glfw3_mt",
+
+        -- vulkan
+        "%VULKAN_SDK%/Lib/vulkan-1",
     }
 
     filter "system:windows"

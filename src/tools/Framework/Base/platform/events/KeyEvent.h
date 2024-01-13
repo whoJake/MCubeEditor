@@ -1,7 +1,7 @@
 #pragma once
 #include "Event.h"
 #include <sstream>
-#include "glfw/glfw3.h"
+#include "glfw3.h"
 
 enum class KeyCode {
     Unknown,
