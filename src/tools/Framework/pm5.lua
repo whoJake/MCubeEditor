@@ -36,7 +36,8 @@ project (prjBase)
     {
         "%{prj.name}",
         "%{prjConfiguration}",
-        "%{vendordir}",
+        "%{vendordir}/glfw",
+        "%{vendordir}/vma3.0.1/include"
     }
 
     dependson
