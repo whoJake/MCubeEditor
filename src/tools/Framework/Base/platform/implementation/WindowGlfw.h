@@ -2,9 +2,11 @@
 
 #include "platform/Window.h"
 
-#define NOMINMAX
-#include "glfw/glfw3.h"
-#undef NOMINMAX
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
+
+#include "glfw3.h"
 
 class WindowGlfw : public Window {
 public:
