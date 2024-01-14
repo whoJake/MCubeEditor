@@ -38,6 +38,9 @@ project (prjBase)
         "%{prjConfiguration}",
         "%{vendordir}/glfw",
         "%{vendordir}/vma3.0.1/include",
+        "%{vendordir}/glslang/StandAlone",
+        "%{vendordir}/glslang/Include",
+        "%{vendordir}/glslang/SPIRV",
 
         -- vulkan
         "%VULKAN_SDK%/Include"
@@ -50,6 +53,7 @@ project (prjBase)
     libdirs
     {
         "%{vendordir}/glfw/lib-vc2022",
+        "%VULKAN_SDK%/Lib",
     }
 
     links
@@ -57,7 +61,23 @@ project (prjBase)
         "glfw3_mt",
 
         -- vulkan
-        "%VULKAN_SDK%/Lib/vulkan-1",
+        "vulkan-1",
+
+        -- spirv/glslang
+		"spirv-cross-core",
+		"spirv-cross-glsl",
+
+		"glslang",
+		"HLSL",
+		"SPIRV",
+		"OGLCompiler",
+		"OSDependent",
+		"SPVRemapper",
+		"SPIRV-Tools",
+		"SPIRV-Tools-opt",
+		"GenericCodeGen",
+		"MachineIndependent",
+		"glslang-default-resource-limits",
     }
 
     filter "system:windows"
@@ -75,14 +95,16 @@ project (prjBase)
     filter "configurations:Debug"
         defines
         {
-            "CFG_DEBUG"
+            "CFG_DEBUG",
+            "USE_VK_VALIDATION_LAYERS",
         }
         symbols "On"
 
     filter "configurations:Release"
         defines
         {
-            "CFG_RELEASE"
+            "CFG_RELEASE",
+            "USE_VK_VALIDATION_LAYERS",
         }
         optimize "On"
 
