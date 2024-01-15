@@ -40,6 +40,7 @@ int ApplicationBase::run(int argc, const char* argv[])
     }
     catch( std::exception ex )
     {
+        m_log.exception(__FUNCTION__, ex.what());
         exitFlags |= ExitFlagBits::Failure;
     }
 
