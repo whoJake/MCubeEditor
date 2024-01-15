@@ -5,6 +5,12 @@
 #include "platform/implementation/WindowGlfw.h"
 #include <cstdlib>
 
+#include <sstream>
+
+#include "vulkan/core/Instance.h"
+#include "vulkan/core/PhysicalDevice.h"
+#include "vulkan/core/Device.h"
+
 WindowedApplication::WindowedApplication()
 { }
 
@@ -24,7 +30,7 @@ ExitFlags WindowedApplication::app_main()
     get_log().info("app", "{}", subst2);
 
     // Create log
-    for( int i = 0; i < 50; i++ )
+    for( int i = 0; i < 10; i++ )
     {
         float zeroOne = static_cast<float>(std::rand()) / RAND_MAX;
         jclog::Level lev = (jclog::Level)(8 * zeroOne);
@@ -44,11 +50,28 @@ ExitFlags WindowedApplication::app_main()
     Window* glfw = new WindowGlfw(get_log(), winProperties);
     glfw->set_title("This is the title.");
 
+    std::vector<const char*> vkInstanceExtensions = glfw->get_required_surface_extensions();
+    vkInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    vk::Instance vkInstance(get_log(),
+        "MCubeEditor",
+        "vk",
+        VK_API_VERSION_1_3,
+        vkInstanceExtensions,
+        { "VK_LAYER_KHRONOS_validation" });
+
+    VkSurfaceKHR vkSurface = glfw->create_surface(vkInstance);
+
+    vk::Device vkDevice(get_log(),
+        vkInstance.get_first_gpu(),
+        vkSurface);
+
     while( !glfw->get_should_close() )
     {
         glfw->process_events();
     }
 
+    vkDestroySurfaceKHR(vkInstance.get_handle(), vkSurface, nullptr);
     delete glfw;
 
     return ExitFlagBits::Success;
