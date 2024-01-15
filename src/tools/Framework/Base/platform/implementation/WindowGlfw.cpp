@@ -45,6 +45,25 @@ void* WindowGlfw::get_native_handle() const
     return m_handle;
 }
 
+VkSurfaceKHR WindowGlfw::create_surface(vk::Instance& instance)
+{
+    VkSurfaceKHR surface{ VK_NULL_HANDLE };
+    VkResult result = glfwCreateWindowSurface(instance.get_handle(), m_handle, nullptr, &surface);
+    VK_CHECK(result, "Failed to create VkSurface on GLFW window.");
+
+    return surface;
+}
+
+std::vector<const char*> WindowGlfw::get_required_surface_extensions() const
+{
+    const char** pExtensions;
+    uint32_t extensionCount{ 0 };
+    pExtensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+
+    std::vector<const char*> extensions(pExtensions, pExtensions + extensionCount);
+    return extensions;
+}
+
 bool WindowGlfw::get_should_close() const
 {
     return glfwWindowShouldClose(m_handle);

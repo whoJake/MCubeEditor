@@ -15,9 +15,9 @@ public:
 
     void* get_native_handle() const;
 
-    // VkSurfaceKHR create_surface(vulkan::Instance& instance) override;
+    VkSurfaceKHR create_surface(vk::Instance& instance) override;
 
-    // std::vector<const char*> get_required_surface_extensions() const override;
+    std::vector<const char*> get_required_surface_extensions() const override;
 
     bool get_should_close() const;
 
