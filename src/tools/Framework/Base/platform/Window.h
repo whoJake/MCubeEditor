@@ -4,6 +4,10 @@
 #include "logging/jclog.h"
 #include "events/Event.h"
 
+// Is this the right place for this dependency?
+#include "vulkan/vulkan.h"
+#include "vulkan/core/Instance.h"
+
 class Window {
 public:
     struct Position {
@@ -46,9 +50,9 @@ public:
 
     virtual void* get_native_handle() const = 0;
 
-    // virtual VkSurfaceKHR create_surface(vulkan::Instance& instance) = 0;
+    virtual VkSurfaceKHR create_surface(vk::Instance& instance) = 0;
 
-    // virtual std::vector<const char*> get_required_surface_extensions() const = 0;
+    virtual std::vector<const char*> get_required_surface_extensions() const = 0;
 
     virtual bool get_should_close() const = 0;
 
