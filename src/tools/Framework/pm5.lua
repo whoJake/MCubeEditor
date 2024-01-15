@@ -64,20 +64,20 @@ project (prjBase)
         "vulkan-1",
 
         -- spirv/glslang
-		"spirv-cross-core",
-		"spirv-cross-glsl",
+        "spirv-cross-core",
+        "spirv-cross-glsl",
 
-		"glslang",
-		"HLSL",
-		"SPIRV",
-		"OGLCompiler",
-		"OSDependent",
-		"SPVRemapper",
-		"SPIRV-Tools",
-		"SPIRV-Tools-opt",
-		"GenericCodeGen",
-		"MachineIndependent",
-		"glslang-default-resource-limits",
+        "glslang",
+        "HLSL",
+        "SPIRV",
+        "OGLCompiler",
+        "OSDependent",
+        "SPVRemapper",
+        "SPIRV-Tools",
+        "SPIRV-Tools-opt",
+        "GenericCodeGen",
+        "MachineIndependent",
+        "glslang-default-resource-limits",
     }
 
     filter "system:windows"
