@@ -25,7 +25,7 @@ RenderTarget::RenderTarget(std::vector<Image>&& images) :
             return VkExtent2D{ image.get_extent().width, image.get_extent().height };
         };
 
-    /// Checks to see if there is only one unique extent size
+    // Checks to see if there is only one unique extent size
     std::hash<VkExtent2D> hasher;
     m_extent = image_to_extent_2D(m_images[0]);
     size_t uniqueHash = hasher(m_extent);
