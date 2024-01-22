@@ -11,6 +11,7 @@
 #include <iterator>
 #include <algorithm>
 #include <format>
+#include <limits>
 
 #include "exceptions.h"
 #include "logging/jclog.h"
