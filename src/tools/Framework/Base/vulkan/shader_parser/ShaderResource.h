@@ -20,6 +20,34 @@ enum class ShaderResourceType {
     All
 };
 
+static VkDescriptorType get_descriptor_type(ShaderResourceType type, bool dynamic = false)
+{
+    switch( type )
+    {
+    case ShaderResourceType::InputAttachment:
+        return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+    case ShaderResourceType::Image:
+        return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    case ShaderResourceType::ImageSampler:
+        return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    case ShaderResourceType::ImageStorage:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    case ShaderResourceType::Sampler:
+        return VK_DESCRIPTOR_TYPE_SAMPLER;
+    case ShaderResourceType::BufferUniform:
+        return dynamic
+            ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+            : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    case ShaderResourceType::BufferStorage:
+        return dynamic
+            ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC
+            : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        break;
+    default:
+        throw VulkanException("Given resource type does not have a VkDescriptorType associated with it.");
+    }
+}
+
 enum class ShaderResourceMode {
     Static,
     Dynamic,
