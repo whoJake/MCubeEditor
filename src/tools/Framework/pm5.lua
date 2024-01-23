@@ -72,7 +72,6 @@ project (prjBase)
         "SPIRV",
         "OGLCompiler",
         "OSDependent",
-        "SPVRemapper",
         "SPIRV-Tools",
         "SPIRV-Tools-opt",
         "GenericCodeGen",
