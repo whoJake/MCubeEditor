@@ -8,7 +8,7 @@ namespace vk
 
 class Device;
 class ShaderModule;
-class ShaderResource;
+struct ShaderResource;
 
 class DescriptorSetLayout : public Resource<VkDescriptorSetLayout>
 {
@@ -30,14 +30,35 @@ public:
     const std::vector<VkDescriptorSetLayoutBinding>& get_bindings() const;
 
     const std::vector<ShaderModule*>& get_shader_modules() const;
+
+    size_t get_hash() const;
 private:
+    void calculate_hash();
+private:
+    size_t m_hash{ 0 };
+
     uint32_t m_setIndex;
     std::vector<VkDescriptorSetLayoutBinding> m_bindings;
     std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> m_bindingMap;
     std::unordered_map<std::string, uint32_t> m_resourceToBindingMap;
 
     std::vector<ShaderModule*> m_shaderModules;
-
 };
 
 } // vk
+
+
+// hasher
+namespace std
+{
+
+template<>
+struct hash<vk::DescriptorSetLayout>
+{
+    size_t operator()(const vk::DescriptorSetLayout& layout) const
+    {
+        return layout.get_hash();
+    }
+};
+
+} // std

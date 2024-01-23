@@ -20,7 +20,7 @@ public:
 
     const DescriptorSetLayout& get_layout() const;
 
-    VkResult reset();
+    void reset();
 
     VkDescriptorSet allocate();
 
@@ -45,3 +45,18 @@ private:
 };
 
 } // vk
+
+// hasher
+namespace std
+{
+
+template<>
+struct hash<vk::DescriptorPool>
+{
+    size_t operator()(const vk::DescriptorPool& pool) const
+    {
+        return pool.get_layout().get_hash();
+    }
+};
+
+} // std

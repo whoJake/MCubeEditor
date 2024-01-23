@@ -49,6 +49,16 @@ struct hash<VkExtent3D>
 };
 
 template<>
+struct hash<VkDescriptorType>
+{
+    size_t operator()(const VkDescriptorType& type) const
+    {
+        std::hash<std::underlying_type<VkDescriptorType>::type> hasher;
+        return hasher(type);
+    }
+};
+
+template<>
 struct hash<vk::Device>
 {
     size_t operator()(const vk::Device& device) const

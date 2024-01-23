@@ -2,6 +2,7 @@
 
 #include "Device.h"
 #include "vulkan/shader_parser/ShaderResource.h"
+#include "common/hashers.h"
 
 namespace vk
 {
@@ -10,7 +11,9 @@ DescriptorSetLayout::DescriptorSetLayout(Device&                            devi
                                          uint32_t                           setIndex,
                                          const std::vector<ShaderModule*>&  shaderModules,
                                          const std::vector<ShaderResource>& resources) :
-    Resource(VK_NULL_HANDLE, device)
+    Resource(VK_NULL_HANDLE, device),
+    m_setIndex(setIndex),
+    m_shaderModules(shaderModules)
 {
     for( const ShaderResource& resource : resources )
     {
@@ -40,6 +43,8 @@ DescriptorSetLayout::DescriptorSetLayout(Device&                            devi
 
     VkResult result = vkCreateDescriptorSetLayout(get_device().get_handle(), &createInfo, nullptr, &m_handle);
     VK_CHECK(result, "Failed to create DescriptorSetLayout.");
+
+    calculate_hash();
 }
 
 DescriptorSetLayout::~DescriptorSetLayout()
@@ -60,6 +65,22 @@ const std::vector<VkDescriptorSetLayoutBinding>& DescriptorSetLayout::get_bindin
 const std::vector<ShaderModule*>& DescriptorSetLayout::get_shader_modules() const
 {
     return m_shaderModules;
+}
+
+size_t DescriptorSetLayout::get_hash() const
+{
+    return m_hash;
+}
+
+void DescriptorSetLayout::calculate_hash()
+{
+    for( VkDescriptorSetLayoutBinding& binding : m_bindings )
+    {
+        hash_combine(m_hash, binding.binding);
+        hash_combine(m_hash, binding.descriptorCount);
+        hash_combine(m_hash, binding.descriptorType);
+        hash_combine(m_hash, binding.stageFlags);
+    }
 }
 
 } // vk
