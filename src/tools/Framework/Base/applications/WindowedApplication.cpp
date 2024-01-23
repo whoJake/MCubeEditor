@@ -10,6 +10,12 @@
 #include "vulkan/core/Instance.h"
 #include "vulkan/core/PhysicalDevice.h"
 #include "vulkan/core/Device.h"
+#include "vulkan/core/ShaderModule.h"
+#include "vulkan/core/DescriptorSetLayout.h"
+#include "vulkan/core/DescriptorPool.h"
+#include "vulkan/core/DescriptorSet.h"
+
+#include "common/fileio.h"
 
 WindowedApplication::WindowedApplication()
 { }
@@ -19,27 +25,6 @@ WindowedApplication::~WindowedApplication()
 
 ExitFlags WindowedApplication::app_main()
 {
-    get_environment().import_var("target", "x:/project/build/dev");
-    get_environment().import_var("target_ps5", "$(target)/ps5");
-    get_environment().import_var("target_ps5", "$(target)/ps5/level");
-
-    std::string subst = get_environment().subst("$(target)/xbsx");
-    std::string subst2 = get_environment().subst("$(target_ps5)/bvh");
-
-    get_log().info("app", "{}", subst);
-    get_log().info("app", "{}", subst2);
-
-    // Create log
-    for( int i = 0; i < 10; i++ )
-    {
-        float zeroOne = static_cast<float>(std::rand()) / RAND_MAX;
-        jclog::Level lev = (jclog::Level)(8 * zeroOne);
-
-        float rand2 = static_cast<float>(std::rand()) / RAND_MAX;
-        std::string logstr = std::format("{}", rand2);
-        get_log().log(lev, "app", logstr.c_str());
-    }
-
     Window::Properties winProperties;
     winProperties.mode = Window::Mode::Windowed;
     winProperties.extent = { 500, 500 };
@@ -65,6 +50,28 @@ ExitFlags WindowedApplication::app_main()
     vk::Device vkDevice(get_log(),
         vkInstance.get_first_gpu(),
         vkSurface);
+
+    JCLOG_INFO(get_log(), "{} limits.", vkDevice.get_gpu().get_properties().limits.timestampPeriod);
+
+    {
+        std::string shaderPath = "shaders/Atomics.frag";
+        std::vector<char> sourceBytes = FileIO::try_read_file(shaderPath).value();
+        std::vector<uint8_t> source(sourceBytes.size());
+        memcpy(source.data(), sourceBytes.data(), source.size());
+
+        vk::ShaderModule& shaderModule = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, source, "main");
+        std::vector<vk::ShaderModule*> shaderModuleVec;
+        shaderModuleVec.push_back(&shaderModule);
+
+        vk::DescriptorSetLayout setLayout(vkDevice, 0, shaderModuleVec, shaderModule.get_resources());
+        vk::DescriptorPool descriptorPool(vkDevice, setLayout);
+
+        // Test expanding pool
+        for( int i = 0; i < 35; i++ )
+        {
+            vk::DescriptorSet set(vkDevice, descriptorPool);
+        }
+    }
 
     while( !glfw->get_should_close() )
     {
