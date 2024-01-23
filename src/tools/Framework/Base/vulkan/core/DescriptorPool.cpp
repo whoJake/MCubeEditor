@@ -12,9 +12,7 @@ DescriptorPool::DescriptorPool(Device&                    device,
     m_layout(&layout),
     m_setsPerPool(setsPerPool),
     m_currentPoolIndex(0)
-{
-
-}
+{ }
 
 DescriptorPool::~DescriptorPool()
 {
@@ -29,7 +27,7 @@ const DescriptorSetLayout& DescriptorPool::get_layout() const
     return *m_layout;
 }
 
-VkResult DescriptorPool::reset()
+void DescriptorPool::reset()
 {
     for( VkDescriptorPool pool : m_pools )
     {
@@ -37,7 +35,7 @@ VkResult DescriptorPool::reset()
     }
 
     // Reset all pool sizes to 0
-    std::fill(m_poolSizes.begin(), m_poolSizes.end(), 0);
+    std::fill(m_poolsSetCount.begin(), m_poolsSetCount.end(), 0);
 
     m_setToPoolIndex.clear();
     m_currentPoolIndex = 0;
