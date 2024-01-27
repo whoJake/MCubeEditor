@@ -20,7 +20,7 @@ public:
 
     ~DescriptorSetLayout();
 
-    DescriptorSetLayout(DescriptorSetLayout&&) = delete;
+    DescriptorSetLayout(DescriptorSetLayout&&);
     DescriptorSetLayout(const DescriptorSetLayout&) = delete;
     DescriptorSetLayout& operator=(DescriptorSetLayout&&) = delete;
     DescriptorSetLayout& operator=(const DescriptorSetLayout&) = delete;

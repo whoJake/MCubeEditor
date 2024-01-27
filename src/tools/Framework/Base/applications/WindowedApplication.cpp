@@ -13,6 +13,7 @@
 #include "vulkan/core/ShaderModule.h"
 #include "vulkan/core/DescriptorSetLayout.h"
 #include "vulkan/core/DescriptorPool.h"
+#include "vulkan/core/PipelineLayout.h"
 #include "vulkan/core/DescriptorSet.h"
 
 #include "common/fileio.h"
@@ -59,17 +60,26 @@ ExitFlags WindowedApplication::app_main()
         std::vector<uint8_t> source(sourceBytes.size());
         memcpy(source.data(), sourceBytes.data(), source.size());
 
-        vk::ShaderModule& shaderModule = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, source, "main");
+        vk::ShaderModule& shaderModule = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_FRAGMENT_BIT, source, "main");
+
+
+        std::string shaderPath2 = "shaders/texture3d.vert";
+        std::vector<char> sourceBytes2 = FileIO::try_read_file(shaderPath2).value();
+        std::vector<uint8_t> source2(sourceBytes2.size());
+        memcpy(source2.data(), sourceBytes2.data(), source2.size());
+
+        vk::ShaderModule& shaderModule2 = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, source2, "main");
+
         std::vector<vk::ShaderModule*> shaderModuleVec;
         shaderModuleVec.push_back(&shaderModule);
+        shaderModuleVec.push_back(&shaderModule2);
 
-        vk::DescriptorSetLayout setLayout(vkDevice, 0, shaderModuleVec, shaderModule.get_resources());
-        vk::DescriptorPool descriptorPool(vkDevice, setLayout);
+        vk::PipelineLayout pipelineLayout(vkDevice, shaderModuleVec);
 
-        // Test expanding pool
-        for( int i = 0; i < 35; i++ )
+        JCLOG_INFO(get_log(), "Found resources in pipeline layout:");
+        for( auto& resource : pipelineLayout.get_resources() )
         {
-            vk::DescriptorSet set(vkDevice, descriptorPool);
+            JCLOG_INFO(get_log(), "\{} Set: {} Binding: {} Location: {} Name: {}", vk::to_debug_string(resource.type), resource.set, resource.binding, resource.location, resource.name);
         }
     }
 

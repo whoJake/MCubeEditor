@@ -33,9 +33,6 @@ ShaderModule::ShaderModule(Device&                     device,
     SPIRVReflection reflection(m_SPIRV, m_stage);
     reflection.reflect_shader_resources(&m_resources);
 
-    for( auto& resource : m_resources )
-        JCLOG_INFO(get_device().get_log(), "Resource found: {}", resource.name.c_str());
-
     std::hash<std::string> strhash{ };
     m_UID = strhash(std::string(m_SPIRV.begin(), m_SPIRV.end()));
 }

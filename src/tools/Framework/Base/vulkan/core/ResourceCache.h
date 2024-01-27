@@ -3,6 +3,7 @@
 #include "vulkan/common.h"
 #include "ShaderModule.h"
 #include "Framebuffer.h"
+#include "DescriptorSetLayout.h"
 
 namespace vk
 {
@@ -13,6 +14,7 @@ struct ResourceCacheState
 {
     std::unordered_map<size_t, ShaderModule> shaderModules;
     std::unordered_map<size_t, Framebuffer> framebuffers;
+    std::unordered_map<size_t, DescriptorSetLayout> descriptorSetLayouts;
 };
 
 class ResourceCache
@@ -28,6 +30,8 @@ public:
     ShaderModule& request_shader_module(VkShaderStageFlagBits stage, const std::vector<uint8_t>& glslSource, const std::string& entryPoint);
 
     Framebuffer& request_framebuffer(const RenderTarget& renderTarget, const RenderPass& renderPass);
+
+    DescriptorSetLayout& request_descriptor_set_layout(uint32_t setIndex, const std::vector<ShaderModule*>& shaderModules, const std::vector<ShaderResource>& resources);
 
     void clear_framebuffers();
 

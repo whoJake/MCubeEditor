@@ -20,6 +20,39 @@ enum class ShaderResourceType {
     All
 };
 
+static std::string to_debug_string(ShaderResourceType type)
+{
+    switch( type )
+    {
+    case ShaderResourceType::Input:
+        return "Input";
+    case ShaderResourceType::InputAttachment:
+        return "Input Attachment";
+    case ShaderResourceType::Output:
+        return "Output";
+    case ShaderResourceType::Image:
+        return "Image";
+    case ShaderResourceType::ImageSampler:
+        return "Image Sampler";
+    case ShaderResourceType::ImageStorage:
+        return "Image Storage";
+    case ShaderResourceType::Sampler:
+        return "Sampler";
+    case ShaderResourceType::BufferUniform:
+        return "Uniform Buffer";
+    case ShaderResourceType::BufferStorage:
+        return "Storage Buffer";
+    case ShaderResourceType::PushConstant:
+        return "Push Constant";
+    case ShaderResourceType::SpecializationConstant:
+        return "Specialization Constant";
+    case ShaderResourceType::All:
+        return "All";
+    default:
+        return "Unknown";
+    }
+}
+
 static VkDescriptorType get_descriptor_type(ShaderResourceType type, bool dynamic = false)
 {
     switch( type )

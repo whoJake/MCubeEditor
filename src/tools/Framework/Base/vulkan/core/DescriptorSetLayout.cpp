@@ -22,7 +22,7 @@ DescriptorSetLayout::DescriptorSetLayout(Device&                            devi
             || resource.type == ShaderResourceType::SpecializationConstant
             || resource.type == ShaderResourceType::PushConstant )
         {
-            // These resource types don't contain a binding point.
+            // These resource types don't contain a binding point and arent a part of descriptor set layouts.
             continue;
         }
 
@@ -45,6 +45,18 @@ DescriptorSetLayout::DescriptorSetLayout(Device&                            devi
     VK_CHECK(result, "Failed to create DescriptorSetLayout.");
 
     calculate_hash();
+}
+
+DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) :
+    Resource(other.m_handle, other.m_device),
+    m_hash(other.m_hash),
+    m_setIndex(other.m_setIndex),
+    m_bindings(other.m_bindings),
+    m_bindingMap(other.m_bindingMap),
+    m_resourceToBindingMap(other.m_resourceToBindingMap),
+    m_shaderModules(other.m_shaderModules)
+{
+    other.m_handle = VK_NULL_HANDLE;
 }
 
 DescriptorSetLayout::~DescriptorSetLayout()
