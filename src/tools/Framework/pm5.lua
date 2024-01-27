@@ -41,6 +41,7 @@ project (prjBase)
         "%{vendordir}/glslang/StandAlone",
         "%{vendordir}/glslang/Include",
         "%{vendordir}/glslang/SPIRV",
+        "%{vendordir}/pugixml-1.14/src",
 
         -- vulkan
         "%VULKAN_SDK%/Include"
