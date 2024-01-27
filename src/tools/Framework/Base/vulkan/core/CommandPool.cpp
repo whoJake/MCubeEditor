@@ -67,6 +67,8 @@ CommandBuffer& CommandPool::request_command_buffer(VkCommandBufferLevel level)
         m_activeSecondaryCommandBuffers++;
 
         return *m_secondaryCommandBuffers.back();
+    default:
+        throw VulkanException("Failed to request command buffer as level was not {} recognised.", (size_t)level);
     }
 }
 

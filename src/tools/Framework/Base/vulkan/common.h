@@ -13,6 +13,8 @@
         throw VulkanException(msg, __VA_ARGS__); \
     }
 
+#define MAX_VK_FENCE_TIMEOUT = std::numeric_limits<size_t>::max();
+
 namespace vk
 {
 
