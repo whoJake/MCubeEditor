@@ -24,6 +24,21 @@ inline void hash_combine(size_t& seed, const T& b)
 namespace std
 {
 
+template<typename T>
+struct hash<vector<T>>
+{
+    size_t operator()(const vector<T>& tVec) const
+    {
+        size_t result = 0;
+        for( auto t : tVec )
+        {
+            vk::hash_combine(result, t);
+        }
+
+        return result;
+    }
+};
+
 template<>
 struct hash<VkExtent2D>
 {
