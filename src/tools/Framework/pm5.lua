@@ -36,15 +36,19 @@ project (prjBase)
     {
         "%{prj.name}",
         "%{prjConfiguration}",
+
+        -- glfw
         "%{vendordir}/glfw",
+
+        -- pugixml
+        "%{vendordir}/pugixml-1.14/src",
+
+        -- vulkan
+        "%VULKAN_SDK%/Include",
         "%{vendordir}/vma3.0.1/include",
         "%{vendordir}/glslang/StandAlone",
         "%{vendordir}/glslang/Include",
         "%{vendordir}/glslang/SPIRV",
-        "%{vendordir}/pugixml-1.14/src",
-
-        -- vulkan
-        "%VULKAN_SDK%/Include"
     }
 
     dependson
@@ -59,6 +63,7 @@ project (prjBase)
 
     links
     {
+        -- glfw
         "glfw3_mt",
 
         -- vulkan
