@@ -6,6 +6,7 @@
 #include <memory>
 #include <type_traits>
 #include <sstream>
+#include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <iterator>
