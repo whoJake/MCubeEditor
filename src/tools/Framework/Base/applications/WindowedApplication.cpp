@@ -75,12 +75,6 @@ ExitFlags WindowedApplication::app_main()
         shaderModuleVec.push_back(&shaderModule2);
 
         vk::PipelineLayout pipelineLayout(vkDevice, shaderModuleVec);
-
-        JCLOG_INFO(get_log(), "Found resources in pipeline layout:");
-        for( auto& resource : pipelineLayout.get_resources() )
-        {
-            JCLOG_INFO(get_log(), "\{} Set: {} Binding: {} Location: {} Name: {}", vk::to_debug_string(resource.type), resource.set, resource.binding, resource.location, resource.name);
-        }
     }
 
     while( !glfw->get_should_close() )

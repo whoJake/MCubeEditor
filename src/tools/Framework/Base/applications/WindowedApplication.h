@@ -12,5 +12,4 @@ public:
     ExitFlags app_main();
 
     void on_event(Event& e);
-private:
 };
