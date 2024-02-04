@@ -21,7 +21,7 @@ T& request_resource(const jclog::Log& log, std::unordered_map<size_t, T>& resour
 
     // Could be reduced to a single .emplace call but its useful to know when an object is being created before creating it
 
-    JCLOG_INFO(log, "Generating #{} ( {} ) cache object", resources.size(), typeid(T).name());
+    JCLOG_TRACK(log, "Generating #{} ( {} ) cache object", resources.size(), typeid(T).name());
     T resource(args...);
     auto ins_it = resources.emplace(hash, std::move(resource));
     return (ins_it.first)->second;

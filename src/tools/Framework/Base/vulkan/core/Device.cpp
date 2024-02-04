@@ -42,10 +42,10 @@ Device::Device(jclog::Log&              log,
 
     //--Display available extensions
     if( deviceExtensionCount != 0 )
-        JCLOG_INFO(log, "Device supports the following extensions:");
+        JCLOG_DEBUG(log, "Device supports the following extensions:");
     for( VkExtensionProperties& property : m_deviceExtensions )
     {
-        JCLOG_INFO(log, "\t{}", std::string(property.extensionName).c_str());
+        JCLOG_DEBUG(log, "\t{}", std::string(property.extensionName).c_str());
     }
 
 

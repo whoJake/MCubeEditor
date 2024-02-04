@@ -60,9 +60,9 @@ Instance::Instance(jclog::Log&                    log,
     vkEnumerateInstanceLayerProperties(&validationLayerCount, availableLayers.data());
 
     /// log available layers
-    JCLOG_INFO(log, "Available Instance Layers: ");
+    JCLOG_DEBUG(log, "Available Instance Layers: ");
     for( auto& layer : availableLayers )
-        JCLOG_INFO(log, "\t{}", std::string(layer.layerName).c_str());
+        JCLOG_DEBUG(log, "\t{}", std::string(layer.layerName).c_str());
 
     for( const char* layerName : enabledValidationLayers )
     {
@@ -104,9 +104,9 @@ Instance::Instance(jclog::Log&                    log,
     vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, availableExtensions.data());
 
     /// log available extensions
-    JCLOG_INFO(log, "Available Instance Extensions:");
+    JCLOG_DEBUG(log, "Available Instance Extensions:");
     for( auto& ext : availableExtensions )
-        JCLOG_INFO(log, "\t{}", std::string(ext.extensionName).c_str());
+        JCLOG_DEBUG(log, "\t{}", std::string(ext.extensionName).c_str());
 
     for( const char* extension : enabledExtensions )
     {

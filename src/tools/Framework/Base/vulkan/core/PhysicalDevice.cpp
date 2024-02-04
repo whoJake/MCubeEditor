@@ -64,11 +64,11 @@ bool PhysicalDevice::is_present_supported(VkSurfaceKHR surface, uint32_t queueFa
 
 void PhysicalDevice::request_features(VkPhysicalDeviceFeatures features)
 {
-    JCLOG_INFO(m_instance.get_log(), "Physical Device features requested: ");
+    JCLOG_DEBUG(m_instance.get_log(), "Physical Device features requested: ");
     auto requested = get_device_features_overlap(features, features, true);
     for( auto& req : requested )
     {
-        JCLOG_INFO(m_instance.get_log(), "\t{}", req.c_str());
+        JCLOG_DEBUG(m_instance.get_log(), "\t{}", req.c_str());
     }
 
     auto unsupported = get_device_features_overlap(features, m_features, false);
