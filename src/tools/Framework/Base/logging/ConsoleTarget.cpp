@@ -44,6 +44,9 @@ void ConsoleTarget::log(Level level, const char* functionName, const char* logst
     case Level::TRACE:
         std::cout << LOG_COLOR_GRAY;
         break;
+    case Level::TRACK:
+        std::cout << LOG_COLOR_MAGENTA;
+        break;
     case Level::DEBUG:
         std::cout << LOG_COLOR_CYAN;
         break;

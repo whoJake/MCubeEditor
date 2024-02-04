@@ -6,7 +6,7 @@
 namespace jclog
 {
 
-class FileTarget: public LogTarget
+class FileTarget : public LogTarget
 {
 public:
     FileTarget(const char* logDirectory);

@@ -41,6 +41,13 @@ public:
     }
 
     template<typename... A>
+    void track(const char* functionName, const char* fmt, A&&... args) const
+    {
+        std::string str = std::vformat(fmt, std::make_format_args(args...));
+        log(Level::TRACK, functionName, str.c_str());
+    }
+
+    template<typename... A>
     void debug(const char* functionName, const char* fmt, A&&... args) const
     {
         std::string str = std::vformat(fmt, std::make_format_args(args...));

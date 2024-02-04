@@ -23,6 +23,7 @@ enum class Level
 {
     NONE,
     TRACE,
+    TRACK,
     DEBUG,
     PROFILE,
     INFO,
@@ -40,6 +41,8 @@ static constexpr const char* level_prefix(Level level)
         return "     ";
     case Level::TRACE:
         return "trace";
+    case Level::TRACK:
+        return "track";
     case Level::DEBUG:
         return "debug";
     case Level::PROFILE:
