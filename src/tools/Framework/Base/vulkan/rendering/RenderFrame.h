@@ -5,6 +5,11 @@
 #include "vulkan/core/Device.h"
 #include "vulkan/core/FencePool.h"
 #include "vulkan/core/SemaphorePool.h"
+#include "vulkan/core/CommandPool.h"
+#include "vulkan/core/DescriptorSet.h"
+#include "vulkan/core/Buffer.h"
+
+#include "common/caching.h"
 
 namespace vk
 {
@@ -41,17 +46,25 @@ public:
 
     void release_owned_semaphore(VkSemaphore semaphore);
 
-    // CommandBuffer& request_command_buffer(const Queue& queue, CommandBuffer::ResetMode resetMode, VkCommandBufferLevel level, size_t threadIndex);
+    CommandBuffer& request_command_buffer(const Queue&             queue,
+                                          CommandBuffer::ResetMode resetMode,
+                                          size_t                   threadIndex = 0,
+                                          VkCommandBufferLevel     level       = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-    // VkDescriptorSet request_descriptor_set(??);
+    VkDescriptorSet request_descriptor_set(const DescriptorSetLayout&                 layout,
+                                           size_t                                     threadIndex = 0,
+                                           const std::vector<VkDescriptorBufferInfo>& buffers = { },
+                                           const std::vector<VkDescriptorImageInfo>&  images  = { });
 
     void clear_descriptors();
 
-    // allocate_buffer?
+    Buffer allocate_buffer(VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memoryusage);
 
     void update_descriptor_sets(size_t threadIndex = 0);
 
     void update_render_target(std::unique_ptr<RenderTarget>&& renderTarget);
+private:
+    std::vector<std::unique_ptr<CommandPool>>& get_command_pools(const Queue& queue, CommandBuffer::ResetMode resetMode);
 private:
     Device& m_device;
 
@@ -61,6 +74,15 @@ private:
     SemaphorePool m_semaphorePool;
 
     std::unique_ptr<RenderTarget> m_swapchainRenderTarget;
+
+    // Family index -> CommandPool per thread
+    std::map<uint32_t, std::vector<std::unique_ptr<CommandPool>>> m_commandPools;
+
+    // Hashed DescriptorPool
+    std::vector<std::unique_ptr<std::unordered_map<size_t, DescriptorPool>>> m_descriptorPools;
+
+    // Hashed DescriptorSet
+    std::vector<std::unique_ptr<std::unordered_map<size_t, DescriptorSet>>> m_descriptorSets;
 };
 
 } // vk

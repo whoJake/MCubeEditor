@@ -3,6 +3,7 @@
 #include "vulkan/common.h"
 #include "vulkan/core/Image.h"
 #include "vulkan/core/ImageView.h"
+#include <functional>
 
 namespace vk
 {
@@ -23,6 +24,9 @@ struct Attachment
 class RenderTarget
 {
 public:
+    using CreateFunc = std::function<std::unique_ptr<RenderTarget>(Image&&)>;
+    static const CreateFunc DEFAULT_CREATE_FUNC;
+
     RenderTarget(std::vector<Image>&& images);
     RenderTarget(std::vector<ImageView>&& imageViews);
 

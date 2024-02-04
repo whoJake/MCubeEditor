@@ -1,5 +1,6 @@
 #include "RenderTarget.h"
 #include "common/Hashers.h"
+#include "vulkan/core/Device.h"
 #include <algorithm>
 #include <functional>
 
@@ -11,6 +12,22 @@ Attachment::Attachment(VkFormat format, VkSampleCountFlagBits sampleCount, VkIma
     sampleCount(sampleCount),
     usage(usage)
 { }
+
+const RenderTarget::CreateFunc DEFAULT_CREATE_FUNC = [](Image&& image) -> std::unique_ptr<RenderTarget>
+    {
+        VkFormat depthFormat = get_suitable_depth_format(image.get_device().get_gpu().get_handle());
+        Image depthImage(image.get_device(),
+                         image.get_extent(),
+                         depthFormat,
+                         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+                         VMA_MEMORY_USAGE_GPU_ONLY);
+
+        std::vector<Image> targetImages;
+        targetImages.push_back(std::move(image));
+        targetImages.push_back(std::move(depthImage));
+
+        return std::make_unique<RenderTarget>(std::move(targetImages));
+    };
 
 RenderTarget::RenderTarget(std::vector<Image>&& images) :
     m_device(images.back().get_device()),
