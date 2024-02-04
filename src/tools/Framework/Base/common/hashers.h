@@ -114,6 +114,32 @@ struct hash<vector<uint8_t>>
 };
 
 template<>
+struct hash<VkDescriptorBufferInfo>
+{
+    size_t operator()(const VkDescriptorBufferInfo& info) const
+    {
+        size_t result;
+        vk::hash_combine(result, (void*)info.buffer);
+        vk::hash_combine(result, info.offset);
+        vk::hash_combine(result, info.range);
+        return result;
+    }
+};
+
+template<>
+struct hash<VkDescriptorImageInfo>
+{
+    size_t operator()(const VkDescriptorImageInfo& info) const
+    {
+        size_t result;
+        vk::hash_combine(result, (void*)info.imageLayout);
+        vk::hash_combine(result, (void*)info.imageView);
+        vk::hash_combine(result, (void*)info.sampler);
+        return result;
+    }
+};
+
+template<>
 struct hash<vk::ShaderResource>
 {
     size_t operator()(const vk::ShaderResource& resource) const
