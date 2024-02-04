@@ -20,6 +20,11 @@ public:
     // Handle is dealt with by the DescriptorPool so nothing happens in here.
     ~DescriptorSet() = default;
 
+    DescriptorSet(DescriptorSet&&);
+    DescriptorSet(const DescriptorSet&) = delete;
+    DescriptorSet& operator=(DescriptorSet&&) = delete;
+    DescriptorSet& operator=(const DescriptorSet&) = delete;
+
     const DescriptorSetLayout& get_descriptor_set_layout() const;
 
 private:

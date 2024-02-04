@@ -43,6 +43,16 @@ CommandPool::~CommandPool()
     vkDestroyCommandPool(get_device().get_handle(), get_handle(), nullptr);
 }
 
+CommandPool::CommandPool(CommandPool&& other) :
+    Resource(other.m_handle, other.m_device),
+    m_queueFamilyIndex(other.m_queueFamilyIndex),
+    m_renderFrame(other.m_renderFrame),
+    m_threadIndex(other.m_threadIndex),
+    m_resetMode(other.m_resetMode)
+{
+    other.m_handle = VK_NULL_HANDLE;
+}
+
 CommandBuffer& CommandPool::request_command_buffer(VkCommandBufferLevel level)
 {
     switch( level )

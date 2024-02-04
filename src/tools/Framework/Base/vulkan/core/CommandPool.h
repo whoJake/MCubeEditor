@@ -19,7 +19,7 @@ public:
 
     ~CommandPool();
 
-    CommandPool(CommandPool&&) = delete;
+    CommandPool(CommandPool&&);
     CommandPool(const CommandPool&) = delete;
     CommandPool& operator=(CommandPool&&) = delete;
     CommandPool& operator=(const CommandPool&) = delete;
