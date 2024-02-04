@@ -13,6 +13,11 @@
         throw VulkanException(msg, __VA_ARGS__); \
     }
 
+#define VK_ASSERT(condition, msg, ...)           \
+    if(!!(condition)){                           \
+        throw VulkanException(msg, __VA_ARGS__); \
+    }
+
 #define MAX_VK_FENCE_TIMEOUT = std::numeric_limits<size_t>::max();
 
 namespace vk
@@ -36,6 +41,40 @@ inline bool is_depth_stencil_format(VkFormat format) {
 
 inline bool is_depth_format(VkFormat format) {
     return is_depth_only_format(format) || is_depth_stencil_format(format);
+}
+
+inline VkFormat get_suitable_depth_format(VkPhysicalDevice             gpu,
+                                          bool                         depthOnly          = false,
+                                          const std::vector<VkFormat>& formatPriorityList = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM })
+{
+    VkFormat outputFormat{ VK_FORMAT_UNDEFINED };
+
+    for( const VkFormat& priorityFormat : formatPriorityList )
+    {
+        // Check if we're a depth only format
+        if( depthOnly && !is_depth_only_format(priorityFormat) )
+        {
+            continue;
+        }
+
+        VkFormatProperties properties{ };
+        vkGetPhysicalDeviceFormatProperties(gpu, priorityFormat, &properties);
+
+        // If we want stencil, we need this property for optimal tiling
+        if( properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT )
+        {
+            outputFormat = priorityFormat;
+            break;
+        }
+    }
+
+    if( outputFormat != VK_FORMAT_UNDEFINED )
+    {
+        return outputFormat;
+    }
+
+    // Display formats supported/requested in this exception?
+    throw VulkanException("Failed to select a suitable depth format.");
 }
 
 template <class T>
