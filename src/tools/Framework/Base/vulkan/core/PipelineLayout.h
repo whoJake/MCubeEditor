@@ -10,7 +10,7 @@ namespace vk
 class Device;
 class DescriptorSetLayout;
 
-class PipelineLayout : Resource<VkPipelineLayout>
+class PipelineLayout : public Resource<VkPipelineLayout>
 {
 public:
     PipelineLayout(Device& device, const std::vector<ShaderModule*>& shaderModules);
