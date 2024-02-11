@@ -3,7 +3,7 @@
 namespace vk
 {
 
-bool operator!=(const VertexInputStageState& rhs, const VertexInputStageState& rhs)
+bool operator!=(const VertexInputStageState& lhs, const VertexInputStageState& rhs)
 {
     return lhs.bindings != rhs.bindings || lhs.attributes != rhs.attributes;
 }
@@ -128,6 +128,15 @@ void PipelineState::set_render_pass(const RenderPass& renderPass)
     }
 }
 
+void PipelineState::set_subpass_index(uint32_t subpassIndex)
+{
+    if( m_subpassIndex != subpassIndex )
+    {
+        m_subpassIndex = subpassIndex;
+        m_dirty = true;
+    }
+}
+
 void PipelineState::set_vertex_input_state(const VertexInputStageState& inputState)
 {
     if( m_vertexInputStageState != inputState )
@@ -208,6 +217,11 @@ const PipelineLayout& PipelineState::get_pipeline_layout() const
 const RenderPass* PipelineState::get_render_pass() const
 {
     return m_renderPass;
+}
+
+uint32_t PipelineState::get_subpass_index() const
+{
+    return m_subpassIndex;
 }
 
 const VertexInputStageState& PipelineState::get_vertex_input_state() const

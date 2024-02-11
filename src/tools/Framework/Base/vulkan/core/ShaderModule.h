@@ -29,6 +29,10 @@ public:
 
     const std::vector<ShaderResource>& get_resources() const;
 
+    VkShaderStageFlagBits get_stage() const;
+
+    const std::string& get_entry_point() const;
+
     size_t get_uid() const;
 private:
     Device& m_device;

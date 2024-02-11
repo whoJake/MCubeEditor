@@ -68,6 +68,16 @@ const std::vector<ShaderResource>& ShaderModule::get_resources() const
     return m_resources;
 }
 
+VkShaderStageFlagBits ShaderModule::get_stage() const
+{
+    return m_stage;
+}
+
+const std::string& ShaderModule::get_entry_point() const
+{
+    return m_entryPoint;
+}
+
 size_t ShaderModule::get_uid() const
 {
     return m_UID;

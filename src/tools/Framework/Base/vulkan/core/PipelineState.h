@@ -95,6 +95,8 @@ public:
 
     void set_render_pass(const RenderPass& renderpass);
 
+    void set_subpass_index(uint32_t subpassIndex);
+
     void set_vertex_input_state(const VertexInputStageState& inputState);
 
     void set_input_assembly_state(const InputAssemblyState& assemblyState);
@@ -114,6 +116,8 @@ public:
     const PipelineLayout& get_pipeline_layout() const;
 
     const RenderPass* get_render_pass() const;
+
+    uint32_t get_subpass_index() const;
 
     const VertexInputStageState& get_vertex_input_state() const;
 
