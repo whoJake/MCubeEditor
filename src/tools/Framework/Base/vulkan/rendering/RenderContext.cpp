@@ -3,6 +3,7 @@
 #include "vulkan/core/Device.h"
 #include "vulkan/core/Image.h"
 #include "RenderTarget.h"
+#include "vulkan/core/Swapchain.h"
 
 namespace vk
 {
@@ -29,11 +30,11 @@ RenderContext::RenderContext(Device&                                device,
         // Anything supported
         if( capabilities.currentExtent.width == 0xFFFFFFFF )
         {
-            m_swapchain = std::make_unique<Swapchain>(m_device, surface, presentModePriorityList, surfaceFormatPriorityList, m_surfaceExtent);
+            m_swapchain = std::make_unique<Swapchain>(get_device(), surface, presentModePriorityList, surfaceFormatPriorityList, m_surfaceExtent);
         }
         else
         {
-            m_swapchain = std::make_unique<Swapchain>(m_device, surface, presentModePriorityList, surfaceFormatPriorityList);
+            m_swapchain = std::make_unique<Swapchain>(get_device(), surface, presentModePriorityList, surfaceFormatPriorityList);
         }
 
         m_surfaceExtent = m_swapchain->get_extent();

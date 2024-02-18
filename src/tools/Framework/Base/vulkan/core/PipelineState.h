@@ -53,6 +53,14 @@ struct MultisampleState
     VkBool32 enableAlphaToOne{ VK_FALSE };
 };
 
+struct StencilOpState
+{
+    VkStencilOp failOp{ VK_STENCIL_OP_REPLACE };
+    VkStencilOp passOp{ VK_STENCIL_OP_REPLACE };
+    VkStencilOp depthFailOp{ VK_STENCIL_OP_REPLACE };
+    VkCompareOp compareOp{ VK_COMPARE_OP_NEVER };
+};
+
 struct DepthStencilState
 {
     VkBool32 enableDepthTest{ VK_TRUE };
@@ -60,8 +68,8 @@ struct DepthStencilState
     VkCompareOp compareOp{ VK_COMPARE_OP_LESS_OR_EQUAL };
     VkBool32 enableDepthBoundsTest{ VK_FALSE };
     VkBool32 enableStencilTest{ VK_FALSE };
-    VkStencilOpState front{ };
-    VkStencilOpState back{ };
+    StencilOpState front{ };
+    StencilOpState back{ };
 };
 
 struct ColorBlendAttachmentState

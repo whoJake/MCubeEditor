@@ -5,7 +5,7 @@
 #include "RenderPass.h"
 #include "vulkan/rendering/RenderTarget.h"
 #include "Framebuffer.h"
-#include "PipelineState.h"
+#include "DescriptorSetLayout.h"
 
 namespace vk
 {

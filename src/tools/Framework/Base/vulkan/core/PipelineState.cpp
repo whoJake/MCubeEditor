@@ -1,7 +1,25 @@
 #include "PipelineState.h"
 
+bool operator==(const VkVertexInputBindingDescription& lhs, const VkVertexInputBindingDescription& rhs)
+{
+    return std::tie(lhs.binding, lhs.stride, lhs.inputRate)
+        == std::tie(rhs.binding, rhs.stride, rhs.inputRate);
+}
+
+bool operator==(const VkVertexInputAttributeDescription& lhs, const VkVertexInputAttributeDescription& rhs)
+{
+    return std::tie(lhs.binding, lhs.format, lhs.location, lhs.offset)
+        == std::tie(rhs.binding, rhs.format, rhs.location, rhs.offset);
+}
+
 namespace vk
 {
+
+bool operator==(const ColorBlendAttachmentState& lhs, const ColorBlendAttachmentState& rhs)
+{
+    return std::tie(lhs.blendEnable, lhs.srcColorBlendFactor, lhs.dstColorBlendFactor, lhs.colorBlendOp, lhs.srcAlphaBlendFactor, lhs.dstAlphaBlendFactor, lhs.alphaBlendOp, lhs.colorWriteMask)
+        == std::tie(rhs.blendEnable, rhs.srcColorBlendFactor, rhs.dstColorBlendFactor, rhs.colorBlendOp, rhs.srcAlphaBlendFactor, rhs.dstAlphaBlendFactor, rhs.alphaBlendOp, rhs.colorWriteMask);
+}
 
 bool operator!=(const VertexInputStageState& lhs, const VertexInputStageState& rhs)
 {
@@ -35,10 +53,17 @@ bool operator!=(const MultisampleState& lhs, const MultisampleState& rhs)
         != std::tie(rhs.sampleCount, rhs.enableSampleShading, rhs.minSampleShading, rhs.sampleMask, rhs.enableAlphaToCoverage, rhs.enableAlphaToOne);
 }
 
+bool operator!=(const StencilOpState& lhs, const StencilOpState& rhs)
+{
+    return std::tie(lhs.failOp, lhs.passOp, lhs.depthFailOp, lhs.compareOp)
+        != std::tie(rhs.failOp, rhs.passOp, rhs.depthFailOp, rhs.compareOp);
+}
+
 bool operator!=(const DepthStencilState& lhs, const DepthStencilState& rhs)
 {
-    return std::tie(lhs.enableDepthTest, lhs.writeDepth, lhs.compareOp, lhs.enableDepthBoundsTest, lhs.enableStencilTest, lhs.front, lhs.back)
-        != std::tie(rhs.enableDepthTest, rhs.writeDepth, rhs.compareOp, rhs.enableDepthBoundsTest, rhs.enableStencilTest, rhs.front, rhs.back);
+    return std::tie(lhs.enableDepthTest, lhs.writeDepth, lhs.compareOp, lhs.enableDepthBoundsTest, lhs.enableStencilTest)
+        != std::tie(rhs.enableDepthTest, rhs.writeDepth, rhs.compareOp, rhs.enableDepthBoundsTest, rhs.enableStencilTest)
+        || lhs.back != rhs.back || lhs.front != lhs.front;
 }
 
 bool operator!=(const ColorBlendAttachmentState& lhs, const ColorBlendAttachmentState& rhs)

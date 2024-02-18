@@ -11,7 +11,7 @@ Swapchain::Swapchain(Device& device,
                      const VkExtent2D&                        extent,
                      const uint32_t                           imageCount,
                      const VkSurfaceTransformFlagBitsKHR      transform,
-                     const std::vector<VkImageUsageFlagBits>& imageUsageFlags) :
+                     const std::set<VkImageUsageFlagBits>&    imageUsageFlags) :
     Swapchain(*this, device, surface, presentModePriority, surfaceFormatPriority, extent, imageCount, transform, imageUsageFlags)
 { }
 
@@ -23,9 +23,12 @@ Swapchain::Swapchain(Swapchain& oldSwapchain,
                      const VkExtent2D&                        extent,
                      const uint32_t                           imageCount,
                      const VkSurfaceTransformFlagBitsKHR      transform,
-                     const std::vector<VkImageUsageFlagBits>& imageUsageFlags) :
+                     const std::set<VkImageUsageFlagBits>&    imageUsageFlags) :
     Resource(VK_NULL_HANDLE, device),
-    m_surface(surface)
+    m_surface(surface),
+    m_formatPriorityList(surfaceFormatPriority),
+    m_presentModePriorityList(presentModePriority),
+    m_imageUsageFlagBits(imageUsageFlags)
 {
     VkSurfaceCapabilitiesKHR surfaceCapabilities{ };
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device.get_gpu().get_handle(), surface, &surfaceCapabilities);
@@ -80,6 +83,19 @@ Swapchain::Swapchain(Swapchain& oldSwapchain,
     m_images.resize(swapchainImageCount);
     vkGetSwapchainImagesKHR(m_device.get_handle(), m_handle, &swapchainImageCount, m_images.data());
 }
+
+Swapchain::Swapchain(Swapchain&        oldSwapchain,
+                     const VkExtent2D& extent) :
+    Swapchain(oldSwapchain,
+        oldSwapchain.m_device,
+        oldSwapchain.m_surface,
+        oldSwapchain.m_presentModePriorityList,
+        oldSwapchain.m_formatPriorityList,
+        extent,
+        oldSwapchain.m_properties.imageCount,
+        oldSwapchain.m_properties.transform,
+        oldSwapchain.m_imageUsageFlagBits)
+{ }
 
 Swapchain::~Swapchain()
 {
@@ -182,14 +198,16 @@ uint32_t Swapchain::choose_array_layer_count(uint32_t requestedArrayCount, uint3
     return std::min(requestedArrayCount, maxSupportedArrayLayers);
 }
 
-VkImageUsageFlags Swapchain::choose_image_usage_flags(const std::vector<VkImageUsageFlagBits>& requestedUsageFlags, VkImageUsageFlags supportedUsageFlags) const
+VkImageUsageFlags Swapchain::choose_image_usage_flags(const std::set<VkImageUsageFlagBits>& requestedUsageFlags, VkImageUsageFlags supportedUsageFlags) const
 {
     VkImageUsageFlags result{ };
 
-    for( int i = 0; i < requestedUsageFlags.size(); i++ )
+    for( VkImageUsageFlagBits flag : requestedUsageFlags)
     {
-        if( requestedUsageFlags[i] & supportedUsageFlags )
-            result &= requestedUsageFlags[i];
+        if( flag & supportedUsageFlags )
+        {
+            result &= flag;
+        }
     }
 
     if( !result )

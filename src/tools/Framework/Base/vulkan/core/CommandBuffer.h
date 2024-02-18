@@ -2,6 +2,7 @@
 
 #include "vulkan/common.h"
 #include "Resource.h"
+#include "PipelineState.h"
 
 namespace vk
 {
@@ -11,8 +12,8 @@ class CommandPool;
 class RenderTarget;
 class RenderPass;
 class Framebuffer;
-class PipelineState;
 class PipelineLayout;
+class DescriptorSetLayout;
 
 class CommandBuffer : public Resource<VkCommandBuffer>
 {

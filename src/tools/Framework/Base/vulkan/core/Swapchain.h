@@ -2,6 +2,7 @@
 
 #include "vulkan/common.h"
 #include "Resource.h"
+#include <set>
 
 namespace vk
 {
@@ -10,15 +11,15 @@ class Device;
 
 struct SwapchainProperties
 {
-    VkSwapchainKHR                oldSwapchain;
-    uint32_t                      imageCount{ 3 };
-    VkExtent2D                    extent{ };
-    VkSurfaceFormatKHR            surfaceFormat{ };
-    uint32_t                      arrayLayers;
-    VkImageUsageFlags             imageUsage;
-    VkSurfaceTransformFlagBitsKHR transform;
-    VkCompositeAlphaFlagBitsKHR   compositeAlpha;
-    VkPresentModeKHR              presentMode;
+    VkSwapchainKHR                 oldSwapchain;
+    uint32_t                       imageCount{ 3 };
+    VkExtent2D                     extent{ };
+    VkSurfaceFormatKHR             surfaceFormat{ };
+    uint32_t                       arrayLayers;
+    VkImageUsageFlags              imageUsage;
+    VkSurfaceTransformFlagBitsKHR  transform;
+    VkCompositeAlphaFlagBitsKHR    compositeAlpha;
+    VkPresentModeKHR               presentMode;
 };
 
 class Swapchain : public Resource<VkSwapchainKHR>
@@ -32,7 +33,7 @@ public:
               const VkExtent2D&                        extent                = { },
               const uint32_t                           imageCount            = { 3 },
               const VkSurfaceTransformFlagBitsKHR      transform             = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-              const std::vector<VkImageUsageFlagBits>& imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT });
+              const std::set<VkImageUsageFlagBits>&    imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT });
 
     Swapchain(Device&                                  device,
               VkSurfaceKHR                             surface,
@@ -41,7 +42,10 @@ public:
               const VkExtent2D&                        extent                = { },
               const uint32_t                           imageCount            = { 3 },
               const VkSurfaceTransformFlagBitsKHR      transform             = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-              const std::vector<VkImageUsageFlagBits>& imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT });
+              const std::set<VkImageUsageFlagBits>&    imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT });
+
+    Swapchain(Swapchain&                               oldSwapchain,
+              const VkExtent2D&                        extent);
 
     ~Swapchain();
 
@@ -73,6 +77,11 @@ private:
 
     std::vector<VkPresentModeKHR> m_supportedPresentModes;
 
+    std::vector<VkSurfaceFormatKHR> m_formatPriorityList;
+
+    std::vector<VkPresentModeKHR> m_presentModePriorityList;
+
+    std::set<VkImageUsageFlagBits> m_imageUsageFlagBits;
 private:
     uint32_t choose_image_count(uint32_t requestedImageCount, uint32_t minSupportedImageCount, uint32_t maxSupportedImageCount) const;
 
@@ -82,7 +91,7 @@ private:
 
     uint32_t choose_array_layer_count(uint32_t requestedArrayCount, uint32_t maxSupportedArrayLayers) const;
 
-    VkImageUsageFlags choose_image_usage_flags(const std::vector<VkImageUsageFlagBits>& requestedUsageFlags, VkImageUsageFlags supportedUsageFlags) const;
+    VkImageUsageFlags choose_image_usage_flags(const std::set<VkImageUsageFlagBits>& requestedUsageFlags, VkImageUsageFlags supportedUsageFlags) const;
 
     VkSurfaceTransformFlagsKHR choose_transform(VkSurfaceTransformFlagBitsKHR requestedTransform, VkSurfaceTransformFlagsKHR supportedTransforms, VkSurfaceTransformFlagsKHR currentTransform) const;
 

@@ -104,8 +104,21 @@ GraphicsPipeline::GraphicsPipeline(Device&         device,
     depthStencilInfo.depthBoundsTestEnable = state.get_depth_stencil_state().enableDepthBoundsTest;
     depthStencilInfo.stencilTestEnable = state.get_depth_stencil_state().enableStencilTest;
 
-    depthStencilInfo.front = state.get_depth_stencil_state().front;
-    depthStencilInfo.back = state.get_depth_stencil_state().back;
+    depthStencilInfo.front.failOp = state.get_depth_stencil_state().front.failOp;
+    depthStencilInfo.front.passOp = state.get_depth_stencil_state().front.passOp;
+    depthStencilInfo.front.depthFailOp = state.get_depth_stencil_state().front.depthFailOp;
+    depthStencilInfo.front.compareOp = state.get_depth_stencil_state().front.compareOp;
+    depthStencilInfo.front.compareMask = 0;
+    depthStencilInfo.front.writeMask = 0;
+    depthStencilInfo.front.reference = 0;
+
+    depthStencilInfo.back.failOp = state.get_depth_stencil_state().back.failOp;
+    depthStencilInfo.back.passOp = state.get_depth_stencil_state().back.passOp;
+    depthStencilInfo.back.depthFailOp = state.get_depth_stencil_state().back.depthFailOp;
+    depthStencilInfo.back.compareOp = state.get_depth_stencil_state().back.compareOp;
+    depthStencilInfo.back.compareMask = 0;
+    depthStencilInfo.back.writeMask = 0;
+    depthStencilInfo.back.reference = 0;
 
     VkPipelineColorBlendStateCreateInfo colorBlendInfo{ VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
     colorBlendInfo.logicOpEnable = state.get_color_blend_state().enableBlend;
