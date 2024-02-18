@@ -18,7 +18,12 @@
 
 #include "common/fileio.h"
 
-WindowedApplication::WindowedApplication()
+WindowedApplication::WindowedApplication() :
+    m_windowProperties()
+{ }
+
+WindowedApplication::WindowedApplication(const Window::Properties& properties) :
+    m_windowProperties(properties)
 { }
 
 WindowedApplication::~WindowedApplication()
@@ -26,17 +31,12 @@ WindowedApplication::~WindowedApplication()
 
 ExitFlags WindowedApplication::app_main()
 {
-    Window::Properties winProperties;
-    winProperties.mode = Window::Mode::Windowed;
-    winProperties.extent = { 500, 500 };
-    winProperties.resizable = true;
-    winProperties.vsync = Window::VSync::Default;
-    winProperties.eventfn = BIND_EVENT_FN(WindowedApplication::on_event);
+    if( !create_window() )
+    {
+        return ExitFlagBits::InitFailure;
+    }
 
-    Window* glfw = new WindowGlfw(get_log(), winProperties);
-    glfw->set_title("This is the title.");
-
-    std::vector<const char*> vkInstanceExtensions = glfw->get_required_surface_extensions();
+    std::vector<const char*> vkInstanceExtensions = m_window->get_required_surface_extensions();
     vkInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     vk::Instance vkInstance(get_log(),
@@ -46,7 +46,7 @@ ExitFlags WindowedApplication::app_main()
         vkInstanceExtensions,
         { "VK_LAYER_KHRONOS_validation" });
 
-    VkSurfaceKHR vkSurface = glfw->create_surface(vkInstance);
+    VkSurfaceKHR vkSurface = m_window->create_surface(vkInstance);
 
     vk::Device vkDevice(get_log(),
         vkInstance.get_first_gpu(),
@@ -62,7 +62,6 @@ ExitFlags WindowedApplication::app_main()
 
         vk::ShaderModule& shaderModule = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_FRAGMENT_BIT, source, "main");
 
-
         std::string shaderPath2 = "shaders/texture3d.vert";
         std::vector<char> sourceBytes2 = FileIO::try_read_file(shaderPath2).value();
         std::vector<uint8_t> source2(sourceBytes2.size());
@@ -77,13 +76,12 @@ ExitFlags WindowedApplication::app_main()
         vk::PipelineLayout pipelineLayout(vkDevice, shaderModuleVec);
     }
 
-    while( !glfw->get_should_close() )
+    while( !m_window->get_should_close() )
     {
-        glfw->process_events();
+        m_window->process_events();
     }
 
     vkDestroySurfaceKHR(vkInstance.get_handle(), vkSurface, nullptr);
-    delete glfw;
 
     return ExitFlagBits::Success;
 }
@@ -91,4 +89,40 @@ ExitFlags WindowedApplication::app_main()
 void WindowedApplication::on_event(Event& e)
 {
     get_log().event(__FUNCTION__, "{}", e.to_str());
+}
+
+vk::RenderContext& WindowedApplication::get_render_context()
+{
+    return *m_renderContext;
+}
+
+Window& WindowedApplication::get_window()
+{
+    return *m_window;
+}
+
+bool WindowedApplication::create_window()
+{
+    m_windowProperties.eventfn = BIND_EVENT_FN(WindowedApplication::on_event);
+    return create_window(m_windowProperties);
+}
+
+bool WindowedApplication::create_window(Window::Properties& properties)
+{
+    try
+    {
+        m_window = std::make_unique<WindowGlfw>(get_log(), properties);
+    }
+    catch( std::exception e )
+    {
+        JCLOG_EXCEPTION(get_log(), e, "Failed to create GLFW window.");
+        return false;
+    }
+
+    return true;
+}
+
+bool WindowedApplication::create_render_context()
+{
+    return true;
 }

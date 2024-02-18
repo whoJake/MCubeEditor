@@ -143,7 +143,19 @@ project (prjExperimental)
     {
         "%{prj.name}",
         "%{prjBase}",
-        "%{vendordir}"
+
+        -- glfw
+        "%{vendordir}/glfw",
+
+        -- pugixml
+        "%{vendordir}/pugixml-1.14/src",
+
+        -- vulkan
+        "%VULKAN_SDK%/Include",
+        "%{vendordir}/vma3.0.1/include",
+        "%{vendordir}/glslang/StandAlone",
+        "%{vendordir}/glslang/Include",
+        "%{vendordir}/glslang/SPIRV",
     }
 
     dependson

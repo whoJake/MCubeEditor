@@ -13,5 +13,6 @@
 #define JCLOG_INFO(logref, fmt, ...) (logref).info(__FUNCTION__, fmt, __VA_ARGS__)
 #define JCLOG_WARN(logref, fmt, ...) (logref).warn(__FUNCTION__, fmt, __VA_ARGS__)
 #define JCLOG_ERROR(logref, fmt, ...) (logref).error(__FUNCTION__, fmt, __VA_ARGS__)
+#define JCLOG_EXCEPTION(logref, ex, fmt, ...) (logref).exception(__FUNCTION__, ex, fmt, __VA_ARGS__)
 #define JCLOG_EVENT(logref, fmt, ...) (logref).event(__FUNCTION__, fmt, __VA_ARGS__)
 #define JCLOG_LOG(logref, level, fmt, ...) (logref).log(level, __FUNCTION__, fmt, __VA_ARGS__)

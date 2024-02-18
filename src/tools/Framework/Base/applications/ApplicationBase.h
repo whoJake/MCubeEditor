@@ -9,7 +9,8 @@ class Environment;
 enum ExitFlagBits : int32_t
 {
     Success = 0,
-    Failure = 1 << 0
+    Failure = 1 << 0,
+    InitFailure = 1 << 1
 };
 typedef int32_t ExitFlags;
 

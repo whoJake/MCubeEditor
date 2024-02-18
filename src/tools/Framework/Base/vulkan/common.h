@@ -6,7 +6,7 @@
     #define NOMINMAX
 #endif
 #define VMA_STATIC_VULKAN_FUNCTIONS 1
-#include "vma/vk_mem_alloc.h"
+#include "vk_mem_alloc.h"
 
 #define VK_CHECK(result, msg, ...)               \
     if(result!=VK_SUCCESS){                      \

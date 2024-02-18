@@ -35,10 +35,10 @@ public:
     };
 
     struct Properties {
-        std::string title = "";
+        std::string title = "Windowed Application Title";
         Mode mode = Mode::Windowed;
-        bool resizable = false;
-        VSync vsync = VSync::Off;
+        bool resizable = true;
+        VSync vsync = VSync::Default;
         Position position = { 0, 0 };
         Extent extent = { 1200, 900 };
         std::function<void(Event&)> eventfn = [](Event& e) {};
