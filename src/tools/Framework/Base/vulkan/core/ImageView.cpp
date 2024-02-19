@@ -24,8 +24,7 @@ ImageView::ImageView(Image&          image,
     m_subresourceRange.baseArrayLayer = baseArrayLevel;
     m_subresourceRange.levelCount = mipCount == 0 ? m_image->get_subresource().mipLevel : mipCount;
     m_subresourceRange.layerCount = arrayCount == 0 ? m_image->get_subresource().arrayLayer : arrayCount;
-
-    if( is_depth_format(format) )
+    if( is_depth_format(m_format) )
         m_subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     else
         m_subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;

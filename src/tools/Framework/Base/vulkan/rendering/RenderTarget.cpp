@@ -13,22 +13,6 @@ Attachment::Attachment(VkFormat format, VkSampleCountFlagBits sampleCount, VkIma
     usage(usage)
 { }
 
-const RenderTarget::CreateFunc DEFAULT_CREATE_FUNC = [](Image&& image) -> std::unique_ptr<RenderTarget>
-    {
-        VkFormat depthFormat = get_suitable_depth_format(image.get_device().get_gpu().get_handle());
-        Image depthImage(image.get_device(),
-                         image.get_extent(),
-                         depthFormat,
-                         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                         VMA_MEMORY_USAGE_GPU_ONLY);
-
-        std::vector<Image> targetImages;
-        targetImages.push_back(std::move(image));
-        targetImages.push_back(std::move(depthImage));
-
-        return std::make_unique<RenderTarget>(std::move(targetImages));
-    };
-
 RenderTarget::RenderTarget(std::vector<Image>&& images) :
     m_device(images.back().get_device()),
     m_images(std::move(images))
@@ -137,6 +121,22 @@ void RenderTarget::set_layout(uint32_t attachment, VkImageLayout layout)
 VkImageLayout RenderTarget::get_layout(uint32_t attachment) const
 {
     return m_attachments[attachment].initialLayout;
+}
+
+std::unique_ptr<RenderTarget> RenderTarget::default_create_function(Image&& image)
+{
+    VkFormat depthFormat = get_suitable_depth_format(image.get_device().get_gpu().get_handle());
+    Image depthImage(image.get_device(),
+        image.get_extent(),
+        depthFormat,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+        VMA_MEMORY_USAGE_GPU_ONLY);
+
+    std::vector<Image> targetImages;
+    targetImages.push_back(std::move(image));
+    targetImages.push_back(std::move(depthImage));
+
+    return std::make_unique<RenderTarget>(std::move(targetImages));
 }
 
 } // vk

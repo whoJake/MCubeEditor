@@ -31,18 +31,18 @@ public:
               const std::vector<VkPresentModeKHR>&     presentModePriority   = { VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR },
               const std::vector<VkSurfaceFormatKHR>&   surfaceFormatPriority = { {VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR} },
               const VkExtent2D&                        extent                = { },
-              const uint32_t                           imageCount            = { 3 },
+              const uint32_t                           imageCount            = { 2 },
               const VkSurfaceTransformFlagBitsKHR      transform             = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-              const std::set<VkImageUsageFlagBits>&    imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT });
+              const std::set<VkImageUsageFlagBits>&    imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT });
 
     Swapchain(Device&                                  device,
               VkSurfaceKHR                             surface,
               const std::vector<VkPresentModeKHR>&     presentModePriority   = { VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR },
               const std::vector<VkSurfaceFormatKHR>&   surfaceFormatPriority = { {VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR} },
               const VkExtent2D&                        extent                = { },
-              const uint32_t                           imageCount            = { 3 },
+              const uint32_t                           imageCount            = { 2 },
               const VkSurfaceTransformFlagBitsKHR      transform             = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-              const std::set<VkImageUsageFlagBits>&    imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT });
+              const std::set<VkImageUsageFlagBits>&    imageUsageFlags       = { VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_USAGE_TRANSFER_DST_BIT });
 
     Swapchain(Swapchain&                               oldSwapchain,
               const VkExtent2D&                        extent);

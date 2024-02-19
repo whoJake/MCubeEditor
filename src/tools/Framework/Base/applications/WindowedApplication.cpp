@@ -1,22 +1,11 @@
 #include "WindowedApplication.h"
 
-#include "Windows.h"
 #include "platform/Window.h"
 #include "platform/implementation/WindowGlfw.h"
-#include <cstdlib>
-
-#include <sstream>
 
 #include "vulkan/core/Instance.h"
 #include "vulkan/core/PhysicalDevice.h"
 #include "vulkan/core/Device.h"
-#include "vulkan/core/ShaderModule.h"
-#include "vulkan/core/DescriptorSetLayout.h"
-#include "vulkan/core/DescriptorPool.h"
-#include "vulkan/core/PipelineLayout.h"
-#include "vulkan/core/DescriptorSet.h"
-
-#include "common/fileio.h"
 
 WindowedApplication::WindowedApplication() :
     m_windowProperties()
@@ -36,52 +25,15 @@ ExitFlags WindowedApplication::app_main()
         return ExitFlagBits::InitFailure;
     }
 
-    std::vector<const char*> vkInstanceExtensions = m_window->get_required_surface_extensions();
-    vkInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-    vk::Instance vkInstance(get_log(),
-        "MCubeEditor",
-        "vk",
-        VK_API_VERSION_1_3,
-        vkInstanceExtensions,
-        { "VK_LAYER_KHRONOS_validation" });
-
-    VkSurfaceKHR vkSurface = m_window->create_surface(vkInstance);
-
-    vk::Device vkDevice(get_log(),
-        vkInstance.get_first_gpu(),
-        vkSurface);
-
-    JCLOG_INFO(get_log(), "{} limits.", vkDevice.get_gpu().get_properties().limits.timestampPeriod);
-
+    if( !create_render_context() )
     {
-        std::string shaderPath = "shaders/Atomics.frag";
-        std::vector<char> sourceBytes = FileIO::try_read_file(shaderPath).value();
-        std::vector<uint8_t> source(sourceBytes.size());
-        memcpy(source.data(), sourceBytes.data(), source.size());
-
-        vk::ShaderModule& shaderModule = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_FRAGMENT_BIT, source, "main");
-
-        std::string shaderPath2 = "shaders/texture3d.vert";
-        std::vector<char> sourceBytes2 = FileIO::try_read_file(shaderPath2).value();
-        std::vector<uint8_t> source2(sourceBytes2.size());
-        memcpy(source2.data(), sourceBytes2.data(), source2.size());
-
-        vk::ShaderModule& shaderModule2 = vkDevice.get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, source2, "main");
-
-        std::vector<vk::ShaderModule*> shaderModuleVec;
-        shaderModuleVec.push_back(&shaderModule);
-        shaderModuleVec.push_back(&shaderModule2);
-
-        vk::PipelineLayout pipelineLayout(vkDevice, shaderModuleVec);
+        return ExitFlagBits::InitFailure;
     }
 
     while( !m_window->get_should_close() )
     {
         m_window->process_events();
     }
-
-    vkDestroySurfaceKHR(vkInstance.get_handle(), vkSurface, nullptr);
 
     return ExitFlagBits::Success;
 }
@@ -124,5 +76,79 @@ bool WindowedApplication::create_window(Window::Properties& properties)
 
 bool WindowedApplication::create_render_context()
 {
+    std::vector<const char*> requestedInstanceExtensions = request_instance_extensions();
+    std::vector<const char*> requestedValidationLayers;
+    std::vector<const char*> requestedDeviceExtensions = request_device_extensions();
+    requestedDeviceExtensions.push_back("VK_KHR_swapchain");
+
+#ifdef CFG_DEBUG
+    requestedInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    requestedValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+    for( const char* requestedLayer : request_validation_layers() )
+    {
+        requestedValidationLayers.push_back(requestedLayer);
+    }
+#endif
+    
+    for( const char* requiredExt : m_window->get_required_surface_extensions() )
+    {
+        requestedInstanceExtensions.push_back(requiredExt);
+    }
+
+    try
+    {
+        m_vkInstance = std::make_unique<vk::Instance>(
+            get_log(),
+            m_window->get_properties().title,
+            "JCVE",
+            VK_API_VERSION_1_3,
+            requestedInstanceExtensions,
+            requestedValidationLayers);
+
+        m_vkDevice = std::make_unique<vk::Device>(
+            get_log(),
+            m_vkInstance->get_first_gpu(),
+            m_window->create_surface(*m_vkInstance),
+            requestedDeviceExtensions);
+
+        m_renderContext = std::make_unique<vk::RenderContext>(
+            *m_vkDevice,
+            m_vkDevice->get_surface(),
+            *m_window,
+            request_swapchain_present_mode(),
+            request_swapchain_format());
+    }
+    catch( VulkanException e )
+    {
+        JCLOG_EXCEPTION(get_log(), e, "Failed to initialize vulkan.");
+        return false;
+    }
+
     return true;
+}
+
+std::vector<const char*> WindowedApplication::request_instance_extensions() const
+{
+    return { };
+}
+
+std::vector<const char*> WindowedApplication::request_device_extensions() const
+{
+    return { };
+}
+
+std::vector<const char*> WindowedApplication::request_validation_layers() const
+{
+    return { };
+}
+
+std::vector<VkPresentModeKHR> WindowedApplication::request_swapchain_present_mode() const
+{
+    return { VK_PRESENT_MODE_FIFO_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR };
+}
+
+std::vector<VkSurfaceFormatKHR> WindowedApplication::request_swapchain_format() const
+{
+    return { { VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR } };
 }

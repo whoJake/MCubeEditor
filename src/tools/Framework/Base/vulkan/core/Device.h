@@ -23,10 +23,10 @@ public:
     * @param "surface" Platform specific surface
     * @param "requestedExtensions" (Optional) List of extensions that should be enabled on the VkDevice
     */
-    Device(jclog::Log&              log,
-           PhysicalDevice&          gpu,
-           VkSurfaceKHR             surface,
-           std::vector<std::string> requestedExtensions = { });
+    Device(jclog::Log&                     log,
+           PhysicalDevice&                 gpu,
+           VkSurfaceKHR                    surface,
+           const std::vector<const char*>& requestedExtensions = { });
     ~Device();
 
     Device(const Device&) = delete;
@@ -37,6 +37,7 @@ public:
     VkDevice get_handle() const;
     const jclog::Log& get_log() const;
     const PhysicalDevice& get_gpu() const;
+    VkSurfaceKHR get_surface() const;
     const Queue& get_queue(uint32_t familyIndex, uint32_t index) const;
     const Queue& get_queue_by_flags(VkQueueFlags flags, uint32_t index) const;
     const Queue& get_queue_by_present(uint32_t index) const;

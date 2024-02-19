@@ -6,10 +6,10 @@
 namespace vk
 {
 
-Device::Device(jclog::Log&              log,
-               PhysicalDevice&          gpu,
-               VkSurfaceKHR             surface,
-               std::vector<std::string> requestedExtensions) :
+Device::Device(jclog::Log&                     log,
+               PhysicalDevice&                 gpu,
+               VkSurfaceKHR                    surface,
+               const std::vector<const char*>& requestedExtensions) :
     m_log(log),
     m_gpu(gpu),
     m_surface(surface),
@@ -50,15 +50,15 @@ Device::Device(jclog::Log&              log,
 
 
     std::vector<const char*> unsupportedExtensions{ };
-    for( std::string& extension : requestedExtensions )
+    for( const char* extension : requestedExtensions )
     {
         if( is_extension_supported(extension) )
         {
-            m_enabledExtensions.push_back(extension.c_str());
+            m_enabledExtensions.push_back(extension);
         }
         else
         {
-            unsupportedExtensions.push_back(extension.c_str());
+            unsupportedExtensions.push_back(extension);
         }
     }
 
@@ -108,6 +108,7 @@ Device::~Device()
 {
     m_resourceCache.clear();
     vmaDestroyAllocator(m_allocator);
+    vkDestroySurfaceKHR(m_gpu.get_instance().get_handle(), m_surface, nullptr);
     vkDestroyDevice(m_handle, nullptr);
 }
 
@@ -124,6 +125,11 @@ const jclog::Log& Device::get_log() const
 const PhysicalDevice& Device::get_gpu() const
 {
     return m_gpu;
+}
+
+VkSurfaceKHR Device::get_surface() const
+{
+    return m_surface;
 }
 
 const Queue& Device::get_queue(uint32_t familyIndex, uint32_t index) const

@@ -5,6 +5,7 @@
 #include "vulkan/core/Swapchain.h"
 #include "RenderFrame.h"
 #include "vulkan/core/Buffer.h"
+#include "RenderTarget.h"
 
 namespace vk
 {
@@ -19,7 +20,7 @@ public:
                   const Window&                          window,
                   const std::vector<VkPresentModeKHR>&   presentModePriorityList,
                   const std::vector<VkSurfaceFormatKHR>& surfaceFormatPriorityList,
-                  RenderTarget::CreateFunc               renderTargetCreateFunc = RenderTarget::DEFAULT_CREATE_FUNC,
+                  RenderTarget::CreateFunc               renderTargetCreateFunc = RenderTarget::default_create_function,
                   size_t                                 threadCount = 1);
 
     ~RenderContext() = default;

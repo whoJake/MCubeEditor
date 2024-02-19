@@ -25,7 +25,6 @@ class RenderTarget
 {
 public:
     using CreateFunc = std::function<std::unique_ptr<RenderTarget>(Image&&)>;
-    static const CreateFunc DEFAULT_CREATE_FUNC;
 
     RenderTarget(std::vector<Image>&& images);
     RenderTarget(std::vector<ImageView>&& imageViews);
@@ -52,6 +51,8 @@ public:
     void set_layout(uint32_t attachment, VkImageLayout layout);
 
     VkImageLayout get_layout(uint32_t attachment) const;
+
+    static std::unique_ptr<RenderTarget> default_create_function(Image&& image);
 
 private:
     Device& m_device;

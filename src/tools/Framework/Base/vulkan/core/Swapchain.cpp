@@ -58,11 +58,12 @@ Swapchain::Swapchain(Swapchain& oldSwapchain,
     m_properties.arrayLayers = choose_array_layer_count(1, surfaceCapabilities.maxImageArrayLayers);
     m_properties.imageUsage = choose_image_usage_flags(imageUsageFlags, surfaceCapabilities.supportedUsageFlags);
     // m_properties.transform = choose_transform(transform, surfaceCapabilities.supportedTransforms, surfaceCapabilities.currentTransform);
+    m_properties.transform = surfaceCapabilities.currentTransform;
     m_properties.compositeAlpha = choose_composite_alpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, surfaceCapabilities.supportedCompositeAlpha);
     m_properties.presentMode = choose_present_mode(presentModePriority, m_supportedPresentModes);
 
     VkSwapchainCreateInfoKHR createInfo{ VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR };
-    createInfo.oldSwapchain = m_properties.oldSwapchain;
+    createInfo.oldSwapchain = m_properties.oldSwapchain;    
     createInfo.minImageCount = m_properties.imageCount;
     createInfo.imageExtent = m_properties.extent;
     createInfo.imageColorSpace = m_properties.surfaceFormat.colorSpace;
@@ -161,7 +162,7 @@ VkExtent2D Swapchain::choose_extent(VkExtent2D requestedExtent, VkExtent2D minSu
 
     if( requestedExtent.width < 1 || requestedExtent.height < 1 )
     {
-        JCLOG_WARN(get_device().get_log(), "Swapchain image extent ({}, {}) is unsupported. Selecting ({}, {}).", requestedExtent.width, requestedExtent.height, currentExtent.width, currentExtent.height);
+        // JCLOG_WARN(get_device().get_log(), "Swapchain image extent ({}, {}) is unsupported. Selecting ({}, {}).", requestedExtent.width, requestedExtent.height, currentExtent.width, currentExtent.height);
         return currentExtent;
     }
 
@@ -206,7 +207,7 @@ VkImageUsageFlags Swapchain::choose_image_usage_flags(const std::set<VkImageUsag
     {
         if( flag & supportedUsageFlags )
         {
-            result &= flag;
+            result |= flag;
         }
     }
 
