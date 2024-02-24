@@ -30,7 +30,7 @@ struct hash<vector<T>>
     size_t operator()(const vector<T>& tVec) const
     {
         size_t result = 0;
-        for( auto t : tVec )
+        for( auto& t : tVec )
         {
             vk::hash_combine(result, t);
         }

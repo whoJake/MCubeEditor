@@ -3,6 +3,7 @@
 #include "vulkan/common.h"
 #include "Resource.h"
 #include "PipelineState.h"
+#include "ImageView.h"
 
 namespace vk
 {
@@ -27,8 +28,8 @@ public:
 
     struct RenderPassBinding
     {
-        const RenderPass* renderPass;
-        const Framebuffer* framebuffer;
+        const RenderPass* renderPass{ VK_NULL_HANDLE};
+        const Framebuffer* framebuffer{ VK_NULL_HANDLE};
     };
 
     CommandBuffer(CommandPool& commandPool, VkCommandBufferLevel level);
@@ -51,12 +52,17 @@ public:
     void end_render_pass();
 
     void bind_pipeline_layout(PipelineLayout& layout);
+
+    void image_pipeline_barrier(const ImageView&   imageView,
+                                ImageMemoryBarrier memoryBarrier);
+
+    inline PipelineState& get_pipeline_state() { return m_state; }
 private:
     CommandPool& m_commandPool;
     VkCommandBufferLevel m_level;
 
-    RenderPassBinding m_currentRenderPass;
-    PipelineState m_state;
+    RenderPassBinding m_currentRenderPass{ };
+    PipelineState m_state{ };
     std::unordered_map<uint32_t, DescriptorSetLayout*> m_descriptorSetLayoutBindingState;
 };
 

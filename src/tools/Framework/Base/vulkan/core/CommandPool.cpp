@@ -64,7 +64,7 @@ CommandBuffer& CommandPool::request_command_buffer(VkCommandBufferLevel level)
         }
 
         m_primaryCommandBuffers.emplace_back(std::make_unique<CommandBuffer>(*this, level));
-        m_activeSecondaryCommandBuffers++;
+        m_activePrimaryCommandBuffers++;
 
         return *m_primaryCommandBuffers.back();
     case VK_COMMAND_BUFFER_LEVEL_SECONDARY:

@@ -35,9 +35,20 @@ public:
                        const std::vector<VkSemaphore>&          waitSemaphores   = { },
                        const std::vector<VkPipelineStageFlags>& waitStageFlags   = { });
 
+    /// <summary>
+    /// Begin a command buffer on the current frame, starting the frame if it hasn't been already.
+    /// </summary>
+    /// <param name="resetmode"></param>
+    /// <returns>Fresh command buffer to record to.</returns>
+    CommandBuffer& begin(CommandBuffer::ResetMode resetmode = CommandBuffer::ResetMode::ResetPool);
+
     void begin_frame();
 
     void end_frame(VkSemaphore semaphore);
+
+    void submit_and_end(CommandBuffer& commandBuffer);
+
+    void submit_and_end(const std::vector<CommandBuffer*>& commandBuffers);
 
     void wait_frame();
 
@@ -48,6 +59,8 @@ public:
     bool handle_surface_changes(bool forceUpdate = false);
 
     void update_swapchain(VkExtent2D extent);
+
+    inline VkSemaphore get_aquired_semaphore() const { return m_aquiredSemaphore; }
 
     void recreate();
 

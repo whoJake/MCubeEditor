@@ -26,7 +26,7 @@ RenderPass::RenderPass(Device&                           device,
         desc.initialLayout = attachments[i].initialLayout;
         desc.finalLayout = is_depth_format(desc.format)
             ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-            : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         if( i < loadStoreInfos.size() )
         {
@@ -67,7 +67,8 @@ RenderPass::RenderPass(Device&                           device,
         /// Color attachments
         for( uint32_t attachment : subpass.outputAttachments )
         {
-            VkImageLayout initialLayout = attachments[attachment].initialLayout == VK_IMAGE_LAYOUT_UNDEFINED ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL :
+            VkImageLayout initialLayout = attachments[attachment].initialLayout == VK_IMAGE_LAYOUT_UNDEFINED
+                ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL :
                 attachments[attachment].initialLayout;
             VkAttachmentDescription& description = attachmentDescriptions[attachment];
             if( !is_depth_format(description.format) )
@@ -204,6 +205,7 @@ const VkExtent2D RenderPass::get_render_area_granularity() const {
 
 void RenderPass::set_attachment_layouts(std::vector<VkSubpassDescription>& subpassDescriptions, std::vector<VkAttachmentDescription>& attachmentDescriptions)
 {
+    return;
 
     /// Initial layout becomes layout of first subpass that that attachment
     for( auto& subpass : subpassDescriptions )

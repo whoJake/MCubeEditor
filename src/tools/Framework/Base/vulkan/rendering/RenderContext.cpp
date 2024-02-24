@@ -40,13 +40,13 @@ RenderContext::RenderContext(Device&                                device,
         m_surfaceExtent = m_swapchain->get_extent();
         VkExtent3D imageExtents = { m_surfaceExtent.width, m_surfaceExtent.height, 1 };
 
-        for( auto& image : m_swapchain->get_images() )
+        for( VkImage image : m_swapchain->get_images() )
         {
-            Image colorImage(m_device,
+            Image colorImage(get_device(),
+                             image,
                              imageExtents,
                              m_swapchain->get_format(),
-                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                             VMA_MEMORY_USAGE_GPU_ONLY);
+                             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
 
             // Need lambda here to avoid using any Image& and also gives option to redefine createfunc
             // if don't need depth/stencil or smth else.
@@ -96,6 +96,19 @@ VkSemaphore RenderContext::submit(const Queue&                             queue
     VK_CHECK(submitResult, "Failed to submit command buffers.");
 
     return signalSemaphore;
+}
+
+CommandBuffer& RenderContext::begin(CommandBuffer::ResetMode resetMode)
+{
+    if( !m_frameActive )
+    {
+        begin_frame();
+    }
+
+    VK_ASSERT(m_aquiredSemaphore, "Failed to begin frame.");
+
+    const Queue& graphicsQueue = get_device().get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+    return get_active_frame().request_command_buffer(graphicsQueue, resetMode);
 }
 
 void RenderContext::begin_frame()
@@ -158,12 +171,35 @@ void RenderContext::end_frame(VkSemaphore semaphore)
         }
     }
 
-    if( !m_aquiredSemaphore )
+    if( m_aquiredSemaphore )
     {
         get_active_frame().release_owned_semaphore(m_aquiredSemaphore);
         m_aquiredSemaphore = VK_NULL_HANDLE;
     }
     m_frameActive = false;
+}
+
+void RenderContext::submit_and_end(CommandBuffer& commandBuffer)
+{
+    submit_and_end({ &commandBuffer });
+}
+
+void RenderContext::submit_and_end(const std::vector<CommandBuffer*>& commandBuffers)
+{
+    VK_ASSERT(m_frameActive, "RenderContext is inactive so cannot submit CommandBuffers, make sure that begin has been called.");
+    VkSemaphore renderComplete = VK_NULL_HANDLE;
+
+    if( m_swapchain )
+    {
+        VK_ASSERT(m_aquiredSemaphore, "Failed to submit CommandBuffers as there is no image aquired semaphore, has it already been consumed?");
+        renderComplete = submit(get_device().get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0), commandBuffers, { m_aquiredSemaphore }, { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT });
+    }
+    else
+    {
+        throw VulkanException("Non-swapchain render context not supported yet.");
+    }
+
+    end_frame(renderComplete);
 }
 
 void RenderContext::wait_frame()
@@ -195,7 +231,7 @@ bool RenderContext::handle_surface_changes(bool forceUpdate)
     VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_device.get_gpu().get_handle(), m_swapchain->get_surface(), &capabilities);
     VK_CHECK(result, "Failed to get physical device surface capabilities.");
 
-    if( capabilities.currentExtent.width = 0xFFFFFFFF )
+    if( capabilities.currentExtent.width == 0xFFFFFFFF )
     {
         // Swapchain makes the plays, nothing needs to happen
         return false;

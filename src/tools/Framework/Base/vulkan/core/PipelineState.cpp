@@ -74,7 +74,7 @@ bool operator!=(const ColorBlendAttachmentState& lhs, const ColorBlendAttachment
 
 bool operator!=(const ColorBlendState& lhs, const ColorBlendState& rhs)
 {
-    if( lhs.attachments.size() != lhs.attachments.size() )
+    if( lhs.attachments.size() != rhs.attachments.size() )
     {
         return true;
     }

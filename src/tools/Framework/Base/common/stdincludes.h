@@ -14,5 +14,5 @@
 #include <format>
 #include <limits>
 
-#include "exceptions.h"
 #include "logging/jclog.h"
+#include "exceptions.h"

@@ -14,7 +14,7 @@
     }
 
 #define VK_ASSERT(condition, msg, ...)           \
-    if(!!(condition)){                           \
+    if(!(condition)){                            \
         throw VulkanException(msg, __VA_ARGS__); \
     }
 
@@ -26,6 +26,18 @@ namespace vk
 struct LoadStoreInfo {
     VkAttachmentLoadOp loadOp;
     VkAttachmentStoreOp storeOp;
+};
+
+struct ImageMemoryBarrier
+{
+    VkImageLayout oldLayout{ VK_IMAGE_LAYOUT_UNDEFINED };
+    VkImageLayout newLayout{ VK_IMAGE_LAYOUT_UNDEFINED };
+    VkAccessFlags srcAccessMask{ 0 };
+    VkAccessFlags dstAccessMask{ 0 };
+    uint32_t srcQueueFamilyIndex{ VK_QUEUE_FAMILY_IGNORED };
+    uint32_t dstQueueFamilyIndex{ VK_QUEUE_FAMILY_IGNORED };
+    VkPipelineStageFlags srcStageMask{ VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
+    VkPipelineStageFlags dstStageMask{ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT };
 };
 
 inline bool is_depth_only_format(VkFormat format) {

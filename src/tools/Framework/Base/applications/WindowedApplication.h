@@ -3,6 +3,7 @@
 #include "ApplicationBase.h"
 #include "platform/events/Event.h"
 #include "vulkan/rendering/RenderContext.h"
+#include "vulkan/core/Pipeline.h"
 
 class WindowedApplication: public ApplicationBase
 {
@@ -33,6 +34,8 @@ private:
     bool create_window(Window::Properties& properties);
 
     bool create_render_context();
+
+    void create_vulkan_things();
 private:
     std::unique_ptr<Window> m_window;
     Window::Properties m_windowProperties;
@@ -40,4 +43,12 @@ private:
     std::unique_ptr<vk::Instance> m_vkInstance;
     std::unique_ptr<vk::Device> m_vkDevice;
     std::unique_ptr<vk::RenderContext> m_renderContext;
+
+    struct
+    {
+        std::unique_ptr<vk::RenderPass> renderPass;
+        std::unique_ptr<vk::PipelineLayout> pipelineLayout;
+        std::unique_ptr<vk::Pipeline> pipeline;
+        vk::PipelineState pipelineState;
+    }m_vulkanThings;
 };

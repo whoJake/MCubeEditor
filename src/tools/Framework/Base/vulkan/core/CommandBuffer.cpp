@@ -97,4 +97,24 @@ void CommandBuffer::bind_pipeline_layout(PipelineLayout& layout)
     m_state.set_pipeline_layout(layout);
 }
 
+void CommandBuffer::image_pipeline_barrier(const ImageView&   imageView,
+                                           ImageMemoryBarrier memoryBarrier)
+{
+    VkImageMemoryBarrier barrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER };
+    barrier.oldLayout = memoryBarrier.oldLayout;
+    barrier.newLayout = memoryBarrier.newLayout;
+
+    barrier.srcAccessMask = memoryBarrier.srcAccessMask;
+    barrier.dstAccessMask = memoryBarrier.dstAccessMask;
+
+    barrier.srcQueueFamilyIndex = memoryBarrier.srcQueueFamilyIndex;
+    barrier.dstQueueFamilyIndex = memoryBarrier.dstQueueFamilyIndex;
+
+    barrier.image = imageView.get_image().get_handle();
+    barrier.subresourceRange = imageView.get_subresource_range();
+
+    vkCmdPipelineBarrier(get_handle(), memoryBarrier.srcStageMask, memoryBarrier.dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+
 } // vk

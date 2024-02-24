@@ -71,18 +71,18 @@ public:
 
     std::unordered_set<ImageView*>& get_views();
 private:
-    VmaAllocation m_allocation;
+    VmaAllocation m_allocation{ };
 
-    VkImageType m_type;
-    VkExtent3D m_extent;
-    VkFormat m_format;
-    VkImageUsageFlags m_usage;
+    VkImageType m_type{ };
+    VkExtent3D m_extent{ };
+    VkFormat m_format{ };
+    VkImageUsageFlags m_usage{ };
 
-    VkSampleCountFlagBits m_sampleCount;
-    VkImageTiling m_tiling;
+    VkSampleCountFlagBits m_sampleCount{ };
+    VkImageTiling m_tiling{ };
 
-    VkImageSubresource m_subresource;
-    uint32_t m_arrayLayerCount;
+    VkImageSubresource m_subresource{ };
+    uint32_t m_arrayLayerCount{ };
 
     std::unordered_set<ImageView*> m_views;
 

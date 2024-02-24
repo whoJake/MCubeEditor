@@ -143,17 +143,17 @@ public:
 
     const ColorBlendState& get_color_blend_state() const;
 private:
-    PipelineLayout* m_layout;
-    const RenderPass* m_renderPass;
+    PipelineLayout* m_layout{ nullptr };
+    const RenderPass* m_renderPass { nullptr };
 
-    VertexInputStageState m_vertexInputStageState;
-    InputAssemblyState m_inputAssemblyState;
-    TessellationState m_tessellationState;
-    ViewportState m_viewportState;
-    RasterizationState m_rasterizationState;
-    MultisampleState m_multisampleState;
-    DepthStencilState m_depthStencilState;
-    ColorBlendState m_colorBlendState;
+    VertexInputStageState m_vertexInputStageState{ };
+    InputAssemblyState m_inputAssemblyState{ };
+    TessellationState m_tessellationState{ };
+    ViewportState m_viewportState{ };
+    RasterizationState m_rasterizationState{ };
+    MultisampleState m_multisampleState{ };
+    DepthStencilState m_depthStencilState{ };
+    ColorBlendState m_colorBlendState{ };
 
     uint32_t m_subpassIndex{ 0 };
     bool m_dirty = false;
