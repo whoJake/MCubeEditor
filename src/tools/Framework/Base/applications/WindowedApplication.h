@@ -35,14 +35,22 @@ private:
 
     bool create_render_context();
 
+    void calculate_delta_time();
+
     void create_vulkan_things();
 private:
     std::unique_ptr<Window> m_window;
     Window::Properties m_windowProperties;
 
-    std::unique_ptr<vk::Instance> m_vkInstance;
-    std::unique_ptr<vk::Device> m_vkDevice;
-    std::unique_ptr<vk::RenderContext> m_renderContext;
+    std::chrono::steady_clock::time_point m_lastFrameBeginTime{ std::chrono::high_resolution_clock::now() };
+    double m_deltaTime{ 0.0 };
+
+    struct
+    {
+        vk::Instance* instance{ nullptr };
+        vk::Device* device{ nullptr };
+        vk::RenderContext* context{ nullptr };
+    }m_renderHandles{ };
 
     struct
     {

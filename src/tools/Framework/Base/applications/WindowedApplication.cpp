@@ -24,7 +24,17 @@ WindowedApplication::WindowedApplication(const Window::Properties& properties) :
 WindowedApplication::~WindowedApplication()
 { 
     // Not destroying in correct order but this isn't meant to be permenant
-    m_vkDevice->wait_idle();
+    get_render_context().get_device().wait_idle();
+
+    // Destroy vulkanThings
+    m_vulkanThings.pipeline.reset();
+    m_vulkanThings.renderPass.reset();
+    m_vulkanThings.pipelineLayout.reset();
+
+    delete m_renderHandles.context;
+    delete m_renderHandles.device;
+    delete m_renderHandles.instance;
+
 }
 
 ExitFlags WindowedApplication::app_main()
@@ -45,17 +55,14 @@ ExitFlags WindowedApplication::app_main()
 
     while( !m_window->get_should_close() )
     {
-        static double time;
-        double newTime = glfwGetTime();
-        double deltaTime = (time == 0.0) ? (1.0 / 60.0) : newTime - time;
-        time = newTime;
+        calculate_delta_time();
 
         m_window->process_events();
         
-        vk::CommandBuffer& commandbuffer = m_renderContext->begin(vk::CommandBuffer::ResetMode::AlwaysAllocate);
+        vk::CommandBuffer& commandbuffer = get_render_context().begin(vk::CommandBuffer::ResetMode::AlwaysAllocate);
 
-        vk::RenderTarget& cRenderTarget = m_renderContext->get_active_frame().get_render_target();
-        vk::Framebuffer& cFramebuffer = m_vkDevice->get_resource_cache().request_framebuffer(cRenderTarget, *m_vulkanThings.renderPass);
+        vk::RenderTarget& cRenderTarget = get_render_context().get_active_frame().get_render_target();
+        vk::Framebuffer& cFramebuffer = get_render_context().get_device().get_resource_cache().request_framebuffer(cRenderTarget, *m_vulkanThings.renderPass);
         const auto& cViews = cRenderTarget.get_image_views();
         commandbuffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr, &cFramebuffer, 0);
 
@@ -93,7 +100,7 @@ ExitFlags WindowedApplication::app_main()
         commandbuffer.end_render_pass();
         commandbuffer.end();
 
-        m_renderContext->submit_and_end(commandbuffer);
+        get_render_context().submit_and_end(commandbuffer);
 
         if( clearC == 1.f )
             clearC = 0.f;
@@ -101,7 +108,7 @@ ExitFlags WindowedApplication::app_main()
             clearC = 1.f;
 
         std::stringstream ss;
-        ss << "FPS: " << std::to_string(static_cast<int>(1.f / deltaTime)) << " | Frametime: " << deltaTime * 1000 << "ms";
+        ss << "FPS: " << std::to_string(static_cast<int>(1.f / m_deltaTime)) << " | Frametime: " << m_deltaTime * 1000 << "ms";
         m_window->set_title(ss.str());
     }
 
@@ -115,7 +122,7 @@ void WindowedApplication::on_event(Event& e)
 
 vk::RenderContext& WindowedApplication::get_render_context()
 {
-    return *m_renderContext;
+    return *m_renderHandles.context;
 }
 
 Window& WindowedApplication::get_window()
@@ -168,7 +175,7 @@ bool WindowedApplication::create_render_context()
 
     try
     {
-        m_vkInstance = std::make_unique<vk::Instance>(
+        m_renderHandles.instance = new vk::Instance(
             get_log(),
             m_window->get_properties().title,
             "JCVE",
@@ -176,15 +183,15 @@ bool WindowedApplication::create_render_context()
             requestedInstanceExtensions,
             requestedValidationLayers);
 
-        m_vkDevice = std::make_unique<vk::Device>(
+        m_renderHandles.device = new vk::Device(
             get_log(),
-            m_vkInstance->get_first_gpu(),
-            m_window->create_surface(*m_vkInstance),
+            m_renderHandles.instance->get_first_gpu(),
+            m_window->create_surface(*m_renderHandles.instance),
             requestedDeviceExtensions);
 
-        m_renderContext = std::make_unique<vk::RenderContext>(
-            *m_vkDevice,
-            m_vkDevice->get_surface(),
+        m_renderHandles.context = new vk::RenderContext(
+            *m_renderHandles.device,
+            m_renderHandles.device->get_surface(),
             *m_window,
             request_swapchain_present_mode(),
             request_swapchain_format());
@@ -196,6 +203,14 @@ bool WindowedApplication::create_render_context()
     }
 
     return true;
+}
+
+void WindowedApplication::calculate_delta_time()
+{
+    auto timeNow = std::chrono::high_resolution_clock::now();
+    auto pointDifference = static_cast<std::chrono::nanoseconds>(timeNow - m_lastFrameBeginTime);
+    m_deltaTime = pointDifference.count() / 1e9;
+    m_lastFrameBeginTime = timeNow;
 }
 
 std::vector<const char*> WindowedApplication::request_instance_extensions() const
@@ -240,7 +255,7 @@ void WindowedApplication::create_vulkan_things()
         VK_RESOLVE_MODE_NONE,
         "Subpass" } });
 
-    m_vulkanThings.renderPass = std::make_unique<vk::RenderPass>(*m_vkDevice, attachments, infos, subpassInfos);
+    m_vulkanThings.renderPass = std::make_unique<vk::RenderPass>(get_render_context().get_device(), attachments, infos, subpassInfos);
 
     std::string vertPath = "shaders/triangle.vert";
     std::vector<char> vertSource = FileIO::try_read_file(vertPath).value();
@@ -252,12 +267,12 @@ void WindowedApplication::create_vulkan_things()
     std::vector<uint8_t> fragSrc(fragSource.size());
     memcpy(fragSrc.data(), fragSource.data(), fragSrc.size());
 
-    vk::ShaderModule& vertModule = m_vkDevice->get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, vertSrc, "main");
-    vk::ShaderModule& fragModule = m_vkDevice->get_resource_cache().request_shader_module(VK_SHADER_STAGE_FRAGMENT_BIT, fragSrc, "main");
+    vk::ShaderModule& vertModule = get_render_context().get_device().get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, vertSrc, "main");
+    vk::ShaderModule& fragModule = get_render_context().get_device().get_resource_cache().request_shader_module(VK_SHADER_STAGE_FRAGMENT_BIT, fragSrc, "main");
 
     std::vector<vk::ShaderModule*> modules({ &vertModule, &fragModule });
 
-    m_vulkanThings.pipelineLayout = std::make_unique<vk::PipelineLayout>(*m_vkDevice, modules);
+    m_vulkanThings.pipelineLayout = std::make_unique<vk::PipelineLayout>(get_render_context().get_device(), modules);
     m_vulkanThings.pipelineState.set_pipeline_layout(*m_vulkanThings.pipelineLayout);
     m_vulkanThings.pipelineState.set_render_pass(*m_vulkanThings.renderPass);
 
@@ -265,5 +280,5 @@ void WindowedApplication::create_vulkan_things()
     colorstate.attachments.push_back(vk::ColorBlendAttachmentState());
     m_vulkanThings.pipelineState.set_color_blend_state(colorstate);
 
-    m_vulkanThings.pipeline = std::make_unique<vk::GraphicsPipeline>(*m_vkDevice, VK_NULL_HANDLE, m_vulkanThings.pipelineState);
+    m_vulkanThings.pipeline = std::make_unique<vk::GraphicsPipeline>(get_render_context().get_device(), VK_NULL_HANDLE, m_vulkanThings.pipelineState);
 }

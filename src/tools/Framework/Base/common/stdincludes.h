@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <format>
 #include <limits>
+#include <chrono>
 
 #include "logging/jclog.h"
 #include "exceptions.h"
