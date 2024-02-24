@@ -34,6 +34,7 @@ void ResourceCache::clear()
 {
     m_state.shaderModules.clear();
     m_state.descriptorSetLayouts.clear();
+    m_state.framebuffers.clear();
 }
 
 const ResourceCacheState& ResourceCache::get_internal_state() const

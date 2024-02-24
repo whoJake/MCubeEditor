@@ -121,7 +121,10 @@ Image::~Image()
         unmap();
     }
 
-    vmaDestroyImage(get_device().get_allocator(), m_handle, m_allocation);
+    if( m_allocation )
+    {
+        vmaDestroyImage(get_device().get_allocator(), m_handle, m_allocation);
+    }
 }
 
 Image::Image(Image&& other) :
