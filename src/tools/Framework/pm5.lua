@@ -156,6 +156,7 @@ project (prjMCubeEditor)
         "%{vendordir}/glslang/StandAlone",
         "%{vendordir}/glslang/Include",
         "%{vendordir}/glslang/SPIRV",
+        "%{vendordir}/glm-1.0.0/glm",
     }
 
     dependson
