@@ -10,7 +10,7 @@ workspace "Framework"
 
 -- Project names
 prjBase = "Base"
-prjExperimental = "Experimental"
+prjMCubeEditor = "MCubeEditor"
 
 vendordir = "../../3rdparty/"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/"
@@ -122,7 +122,7 @@ project (prjBase)
         targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
         optimize "On"
       
-project (prjExperimental)
+project (prjMCubeEditor)
     location "%{prj.name}"
     kind     "ConsoleApp"
     language "C++"
