@@ -15,6 +15,8 @@ class RenderPass;
 class Framebuffer;
 class PipelineLayout;
 class DescriptorSetLayout;
+class Pipeline;
+class Buffer;
 
 class CommandBuffer : public Resource<VkCommandBuffer>
 {
@@ -52,6 +54,22 @@ public:
     void end_render_pass();
 
     void bind_pipeline_layout(PipelineLayout& layout);
+
+    void bind_pipeline(Pipeline& pipeline, VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+
+    void set_viewport(VkViewport viewport);
+
+    void set_scissor(VkRect2D scissor);
+
+    void bind_vertex_buffers(Buffer& buffer, uint32_t binding);
+
+    void bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding, uint32_t bindingCount);
+
+    void bind_index_buffer(Buffer& buffer, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
+
+    void draw_indexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t firstIndex = 0, uint32_t vertexOffset = 0, uint32_t firstInstance = 0);
+
+    void draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0);
 
     void image_pipeline_barrier(const ImageView&   imageView,
                                 ImageMemoryBarrier memoryBarrier);

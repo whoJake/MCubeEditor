@@ -6,6 +6,8 @@
 #include "vulkan/rendering/RenderTarget.h"
 #include "Framebuffer.h"
 #include "DescriptorSetLayout.h"
+#include "Pipeline.h"
+#include "Buffer.h"
 
 namespace vk
 {
@@ -95,6 +97,55 @@ void CommandBuffer::end_render_pass()
 void CommandBuffer::bind_pipeline_layout(PipelineLayout& layout)
 {
     m_state.set_pipeline_layout(layout);
+}
+
+void CommandBuffer::bind_pipeline(Pipeline& pipeline, VkPipelineBindPoint bindPoint)
+{
+    vkCmdBindPipeline(get_handle(), bindPoint, pipeline.get_handle());
+}
+
+void CommandBuffer::set_viewport(VkViewport viewport)
+{
+    vkCmdSetViewport(get_handle(), 0, 1, &viewport);
+}
+
+void CommandBuffer::set_scissor(VkRect2D scissor)
+{
+    vkCmdSetScissor(get_handle(), 0, 1, &scissor);
+}
+
+void CommandBuffer::bind_vertex_buffers(Buffer& buffer, uint32_t binding)
+{
+    bind_vertex_buffers({ &buffer }, binding, 1);
+}
+
+void CommandBuffer::bind_index_buffer(Buffer& buffer, VkIndexType indexType)
+{
+    vkCmdBindIndexBuffer(get_handle(), buffer.get_handle(), 0, indexType);
+}
+
+void CommandBuffer::bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding, uint32_t bindingCount)
+{
+    std::vector<VkBuffer> handles{ };
+    std::vector<VkDeviceSize> offsets{ };
+    for( auto& buffer : buffers )
+    {
+        offsets.push_back(0);
+        handles.push_back(buffer->get_handle());
+    }
+
+    vkCmdBindVertexBuffers(get_handle(), firstBinding, bindingCount, handles.data(), offsets.data());
+
+}
+
+void CommandBuffer::draw_indexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance)
+{
+    vkCmdDrawIndexed(get_handle(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+
+void CommandBuffer::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    vkCmdDraw(get_handle(), vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
 void CommandBuffer::image_pipeline_barrier(const ImageView&   imageView,
