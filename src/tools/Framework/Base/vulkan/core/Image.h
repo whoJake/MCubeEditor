@@ -87,7 +87,7 @@ private:
     std::unordered_set<ImageView*> m_views;
 
     uint8_t* m_mappedData = nullptr;
-    uint32_t m_mapped = false;
+    bool m_mapped = false;
 };
 
 } // vk

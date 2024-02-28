@@ -20,10 +20,17 @@ public:
     VkBufferUsageFlags get_usage() const;
 
     const VmaAllocation& get_allocation() const;
+
+    uint8_t* map();
+
+    void unmap();
 private:
     VkDeviceSize m_size;
     VkBufferUsageFlags m_usage;
     VmaAllocation m_allocation;
+
+    uint8_t* m_mappedData{ nullptr };
+    bool m_mapped{ false };
 };
 
 } // vk

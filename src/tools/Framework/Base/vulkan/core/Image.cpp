@@ -90,6 +90,9 @@ Image::Image(Device&               device,
 
     VmaAllocationCreateInfo allocInfo{ };
     allocInfo.usage = memoryUsage;
+    allocInfo.flags = memoryUsage == VMA_MEMORY_USAGE_AUTO_PREFER_HOST
+        ? VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+        : 0;
 
     VkResult result = vmaCreateImage(get_device().get_allocator(), &createInfo, &allocInfo, &m_handle, &m_allocation, nullptr);
     VK_CHECK(result, "Failed to create Image.");
