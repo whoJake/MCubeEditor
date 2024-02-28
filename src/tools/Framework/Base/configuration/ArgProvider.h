@@ -6,10 +6,10 @@
 
 enum OptionFlagBits: uint32_t
 {
-    ARGUMENT_OPTIONAL,
-    OPTIONS_OPTIONAL,
-    OPTIONS_VARIABLE,
-    OPTIONS_REQUIRED,
+    ARGUMENT_OPTIONAL = 1 << 0,
+    OPTIONS_OPTIONAL = 1 << 1,
+    OPTIONS_VARIABLE = 1 << 2,
+    OPTIONS_REQUIRED = 1 << 3,
 };
 
 typedef uint32_t OptionFlags;
