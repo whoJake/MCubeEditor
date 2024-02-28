@@ -26,11 +26,6 @@ WindowedApplication::~WindowedApplication()
     // Not destroying in correct order but this isn't meant to be permenant
     get_render_context().get_device().wait_idle();
 
-    // Destroy vulkanThings
-    m_vulkanThings.pipeline.reset();
-    m_vulkanThings.renderPass.reset();
-    m_vulkanThings.pipelineLayout.reset();
-
     delete m_renderHandles.context;
     delete m_renderHandles.device;
     delete m_renderHandles.instance;
@@ -49,67 +44,14 @@ ExitFlags WindowedApplication::app_main()
         return ExitFlagBits::InitFailure;
     }
 
-    create_vulkan_things();
-
-    float clearC = 1.f;
+    on_app_startup();
 
     while( !m_window->get_should_close() )
     {
         calculate_delta_time();
-
         m_window->process_events();
         
-        vk::CommandBuffer& commandbuffer = get_render_context().begin(vk::CommandBuffer::ResetMode::AlwaysAllocate);
-
-        vk::RenderTarget& cRenderTarget = get_render_context().get_active_frame().get_render_target();
-        vk::Framebuffer& cFramebuffer = get_render_context().get_device().get_resource_cache().request_framebuffer(cRenderTarget, *m_vulkanThings.renderPass);
-        const auto& cViews = cRenderTarget.get_image_views();
-        commandbuffer.begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr, &cFramebuffer, 0);
-
-        commandbuffer.get_pipeline_state().set_pipeline_layout(*m_vulkanThings.pipelineLayout);
-        commandbuffer.get_pipeline_state().set_render_pass(*m_vulkanThings.renderPass);
-
-        vk::ColorBlendState colorstate;
-        colorstate.attachments.push_back(vk::ColorBlendAttachmentState());
-        commandbuffer.get_pipeline_state().set_color_blend_state(colorstate);
-
-        VkClearValue clear{ };
-        clear.color = { 0.2f, 0.2f, 0.2f, 1.f };
-        VkClearValue clear2{ };
-        clear2.depthStencil = { 1.f, 0 };
-
-        commandbuffer.begin_render_pass(&cRenderTarget, *m_vulkanThings.renderPass, cFramebuffer, { clear, clear2 });
-        vkCmdBindPipeline(commandbuffer.get_handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_vulkanThings.pipeline->get_handle());
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = 1200.f;
-        viewport.height = 900.f;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(commandbuffer.get_handle(), 0, 1, &viewport);
-
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = { 1200, 900 };
-        vkCmdSetScissor(commandbuffer.get_handle(), 0, 1, &scissor);
-
-        vkCmdDraw(commandbuffer.get_handle(), 3, 1, 0, 0);
-
-        commandbuffer.end_render_pass();
-        commandbuffer.end();
-
-        get_render_context().submit_and_end(commandbuffer);
-
-        if( clearC == 1.f )
-            clearC = 0.f;
-        else
-            clearC = 1.f;
-
-        std::stringstream ss;
-        ss << "FPS: " << std::to_string(static_cast<int>(1.f / m_deltaTime)) << " | Frametime: " << m_deltaTime * 1000 << "ms";
-        m_window->set_title(ss.str());
+        update(m_deltaTime);
     }
 
     return ExitFlagBits::Success;
@@ -236,49 +178,4 @@ std::vector<VkPresentModeKHR> WindowedApplication::request_swapchain_present_mod
 std::vector<VkSurfaceFormatKHR> WindowedApplication::request_swapchain_format() const
 {
     return { { VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR } };
-}
-
-void WindowedApplication::create_vulkan_things()
-{
-    std::vector<vk::Attachment> attachments({
-        { VK_FORMAT_R8G8B8A8_UNORM,  VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT },
-        { VK_FORMAT_D32_SFLOAT, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT }});
-    std::vector<vk::LoadStoreInfo> infos({
-        { VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE },
-        { VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE }});
-    std::vector<vk::SubpassInfo> subpassInfos({ { 
-        { },
-        { 0 },
-        { },
-        false,
-        1,
-        VK_RESOLVE_MODE_NONE,
-        "Subpass" } });
-
-    m_vulkanThings.renderPass = std::make_unique<vk::RenderPass>(get_render_context().get_device(), attachments, infos, subpassInfos);
-
-    std::string vertPath = "shaders/triangle.vert";
-    std::vector<char> vertSource = FileIO::try_read_file(vertPath).value();
-    std::vector<uint8_t> vertSrc(vertSource.size());
-    memcpy(vertSrc.data(), vertSource.data(), vertSrc.size());
-
-    std::string fragPath = "shaders/triangle.frag";
-    std::vector<char> fragSource = FileIO::try_read_file(fragPath).value();
-    std::vector<uint8_t> fragSrc(fragSource.size());
-    memcpy(fragSrc.data(), fragSource.data(), fragSrc.size());
-
-    vk::ShaderModule& vertModule = get_render_context().get_device().get_resource_cache().request_shader_module(VK_SHADER_STAGE_VERTEX_BIT, vertSrc, "main");
-    vk::ShaderModule& fragModule = get_render_context().get_device().get_resource_cache().request_shader_module(VK_SHADER_STAGE_FRAGMENT_BIT, fragSrc, "main");
-
-    std::vector<vk::ShaderModule*> modules({ &vertModule, &fragModule });
-
-    m_vulkanThings.pipelineLayout = std::make_unique<vk::PipelineLayout>(get_render_context().get_device(), modules);
-    m_vulkanThings.pipelineState.set_pipeline_layout(*m_vulkanThings.pipelineLayout);
-    m_vulkanThings.pipelineState.set_render_pass(*m_vulkanThings.renderPass);
-
-    vk::ColorBlendState colorstate;
-    colorstate.attachments.push_back(vk::ColorBlendAttachmentState());
-    m_vulkanThings.pipelineState.set_color_blend_state(colorstate);
-
-    m_vulkanThings.pipeline = std::make_unique<vk::GraphicsPipeline>(get_render_context().get_device(), VK_NULL_HANDLE, m_vulkanThings.pipelineState);
 }
