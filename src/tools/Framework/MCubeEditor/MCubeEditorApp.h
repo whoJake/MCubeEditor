@@ -1,6 +1,7 @@
 #pragma once
 
-#include "applications/WindowedApplication.h";
+#include "applications/WindowedApplication.h"
+#include "scene/Scene.h"
 
 class MCubeEditorApp : public WindowedApplication
 {
@@ -12,5 +13,5 @@ public:
 
     void update(double deltaTime);
 private:
-
+    std::unique_ptr<Scene> m_scene;
 };
