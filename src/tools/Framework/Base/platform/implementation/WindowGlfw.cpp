@@ -179,7 +179,7 @@ void WindowGlfw::setup_events() const
             data.eventfn(e);
         });
 
-        glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* owner, int width, int height) {
+        glfwSetFramebufferSizeCallback(m_handle, [](GLFWwindow* owner, int width, int height) {
             Properties data = *(Properties*)glfwGetWindowUserPointer(owner);
 
             data.extent.width = width;
