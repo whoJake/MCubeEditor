@@ -8,6 +8,12 @@
 #include "vulkan/vulkan.h"
 #include "vulkan/core/Instance.h"
 
+enum class CursorLockState
+{
+    NONE = 0,
+    LOCKED
+};
+
 class Window {
 public:
     struct Position {
@@ -67,6 +73,14 @@ public:
     virtual Extent set_size(const Extent& extent);
 
     virtual void set_mode(const Mode& mode);
+
+    virtual void set_cursor_lock_state(CursorLockState state) { }
+
+    virtual CursorLockState get_cursor_lock_state() const { return CursorLockState::NONE; }
+
+    virtual double poll_mouse_pos_x() const { return 0; }
+
+    virtual double poll_mouse_pos_y() const { return 0; }
 
     const Extent& get_extent() const;
 

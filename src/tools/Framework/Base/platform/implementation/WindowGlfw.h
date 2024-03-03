@@ -19,19 +19,27 @@ public:
 
     std::vector<const char*> get_required_surface_extensions() const override;
 
-    bool get_should_close() const;
+    bool get_should_close() const override;
 
-    void close();
+    void close() override;
 
-    void process_events();
+    void process_events() override;
 
-    void set_title(const std::string& title);
+    void set_title(const std::string& title) override;
 
-    Position set_position(const Position& position);
+    Position set_position(const Position& position) override;
 
-    Extent set_size(const Extent& extent);
+    Extent set_size(const Extent& extent) override;
 
-    void set_mode(const Mode& mode);
+    void set_mode(const Mode& mode) override;
+
+    void set_cursor_lock_state(CursorLockState state) override;
+
+    CursorLockState get_cursor_lock_state() const override;
+
+    double poll_mouse_pos_x() const override;
+
+    double poll_mouse_pos_y() const override;
 private:
     void setup_events() const;
 private:

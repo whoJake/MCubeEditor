@@ -1,5 +1,18 @@
 #include "Input.h"
 
+void Input::set_cursor_lock_state(Window& window, CursorLockState state)
+{
+    if( get_instance()->m_primaryCursorLockState == state )
+    {
+        return;
+    }
+    get_instance()->m_primaryCursorLockState = state;
+    window.set_cursor_lock_state(state);
+
+    get_instance()->m_previousMouseX = window.poll_mouse_pos_x();
+    get_instance()->m_previousMouseY = window.poll_mouse_pos_y();
+}
+
 bool Input::get_key_pressed(KeyCode key)
 {
     return get_key_state(key) == KeyState::PRESSED;
@@ -15,8 +28,26 @@ bool Input::get_key_released(KeyCode key)
     return get_key_state(key) == KeyState::RELEASED;
 }
 
+double Input::get_mouse_move_horizontal()
+{
+    return get_instance()->m_previousMouseX - get_instance()->m_currentMouseX;
+}
+
+double Input::get_mouse_move_vertical()
+{
+    return get_instance()->m_previousMouseY - get_instance()->m_currentMouseY;
+}
+
+CursorLockState Input::get_cursor_lock_state()
+{
+    return get_instance()->m_primaryCursorLockState;
+}
+
 void Input::tick()
 {
+    get_instance()->m_previousMouseX = get_instance()->m_currentMouseX;
+    get_instance()->m_previousMouseY = get_instance()->m_currentMouseY;
+
     for( KeyState& state : get_instance()->m_keyStates )
     {
         switch( state )
@@ -86,6 +117,8 @@ bool Input::register_mouse_scroll_event(MouseScrolledEvent& event)
 
 bool Input::register_mouse_move_event(MouseMovedEvent& event)
 {
+    get_instance()->m_currentMouseX = event.get_pos_x();
+    get_instance()->m_currentMouseY = event.get_pos_y();
     return false;
 }
 

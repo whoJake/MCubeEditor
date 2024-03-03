@@ -4,6 +4,8 @@
 #include "platform/events/KeyEvent.h"
 #include "platform/events/MouseEvent.h"
 
+#include "platform/Window.h"
+
 #include <unordered_map>
 #include <array>
 
@@ -20,13 +22,21 @@ enum class KeyState
 class Input
 {
 public:
+    static void set_cursor_lock_state(Window& window, CursorLockState state);
+
     static bool get_key_pressed(KeyCode key);
     static bool get_key_down(KeyCode key);
     static bool get_key_released(KeyCode key);
 
+    static double get_mouse_move_horizontal();
+    static double get_mouse_move_vertical();
+
+    static CursorLockState get_cursor_lock_state();
+
     static void tick();
 
     static bool register_event(Event& event);
+
 private:
     static KeyState& get_key_state(KeyCode code);
 
@@ -43,6 +53,13 @@ private:
     static bool register_mouse_move_event(MouseMovedEvent& event);
 private:
     std::array<KeyState, static_cast<size_t>(KeyCode::KEYCODE_COUNT)> m_keyStates;
+    CursorLockState m_primaryCursorLockState{ CursorLockState::NONE };
+
+    double m_currentMouseX{ 0.0 };
+    double m_currentMouseY{ 0.0 };
+
+    double m_previousMouseX{ 0.0 };
+    double m_previousMouseY{ 0.0 };
 
 private:
     Input();
