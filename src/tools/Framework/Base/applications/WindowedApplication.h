@@ -21,7 +21,7 @@ public:
 
     virtual void update(double deltaTime) { };
 
-    void on_event(Event& e);
+    virtual void on_event(Event& e) { };
 
     vk::RenderContext& get_render_context();
 
@@ -45,8 +45,6 @@ private:
     bool create_render_context();
 
     void calculate_delta_time();
-
-    void create_vulkan_things();
 private:
     std::unique_ptr<Window> m_window;
     Window::Properties m_windowProperties;

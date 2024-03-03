@@ -3,7 +3,7 @@
 #include <sstream>
 #include "glfw3.h"
 
-enum class KeyCode {
+enum class KeyCode : size_t {
     Unknown,
     Space,
     Apostrophe, /* ' */
@@ -107,10 +107,13 @@ enum class KeyCode {
     KP_Subtract,
     KP_Add,
     KP_Enter,
-    KP_Equal
+    KP_Equal,
+
+    // Number of registered keys.
+    KEYCODE_COUNT
 };
 
-inline KeyCode TranslateKeyCode(int key) {
+inline KeyCode translate_key_code(int key) {
     static const std::unordered_map<int, KeyCode> lookup = {
         {GLFW_KEY_SPACE, KeyCode::Space},
         {GLFW_KEY_APOSTROPHE, KeyCode::Apostrophe},
@@ -223,7 +226,7 @@ inline KeyCode TranslateKeyCode(int key) {
     return it->second;
 }
 
-inline std::string KeyCodeName(KeyCode keycode) {
+inline std::string get_key_code_name(KeyCode keycode) {
     static const std::unordered_map<KeyCode, std::string> lookup = {
         {KeyCode::Space,        "EVENT_KEY_SPACE" },
         {KeyCode::Apostrophe,   "EVENT_KEY_APOSTROPHE" },
@@ -337,10 +340,10 @@ inline std::string KeyCodeName(KeyCode keycode) {
 
 class KeyEvent : public Event {
 public:
-    inline KeyCode GetKeyCode() const { return m_keyCode; }
+    inline KeyCode get_key_code() const { return m_keyCode; }
 protected:
     KeyEvent(int keycode) : 
-        m_keyCode(TranslateKeyCode(keycode)) 
+        m_keyCode(translate_key_code(keycode)) 
     { }
     KeyCode m_keyCode;
 };
@@ -352,11 +355,11 @@ public:
         m_repeatCount(repeatCount)
     { }
 
-    inline int GetRepeatCount() const { return m_repeatCount; }
+    inline int get_repeat_count() const { return m_repeatCount; }
 
     std::string to_str() const override {
         std::stringstream result;
-        result << KeyCodeName(m_keyCode) << " x" << m_repeatCount << " PRESSED";
+        result << get_key_code_name(m_keyCode) << " x" << m_repeatCount << " PRESSED";
         return result.str();
     }
 
@@ -375,7 +378,7 @@ public:
 
     std::string to_str() const override {
         std::stringstream result;
-        result << KeyCodeName(m_keyCode) << " RELEASED";
+        result << get_key_code_name(m_keyCode) << " RELEASED";
         return result.str();
     }
 };
@@ -388,7 +391,7 @@ public:
 
     std::string to_str() const override {
         std::stringstream result;
-        result << KeyCodeName(m_keyCode) << " TYPED";
+        result << get_key_code_name(m_keyCode) << " TYPED";
         return result.str();
     }
 

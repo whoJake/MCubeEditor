@@ -57,11 +57,6 @@ ExitFlags WindowedApplication::app_main()
     return ExitFlagBits::Success;
 }
 
-void WindowedApplication::on_event(Event& e)
-{
-    get_log().event(__FUNCTION__, "{}", e.to_str());
-}
-
 vk::RenderContext& WindowedApplication::get_render_context()
 {
     return *m_renderHandles.context;

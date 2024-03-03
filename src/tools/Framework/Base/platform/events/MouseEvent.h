@@ -4,7 +4,7 @@
 
 class MouseEvent : public Event {
 public:
-    inline int GetButton() const { return m_button; }
+    inline int get_button() const { return m_button; }
 
 protected:
     MouseEvent(int button) :
@@ -19,7 +19,7 @@ public:
         MouseEvent(button),
         m_modifier(mods) {}
 
-    inline int GetModifiers() const { return m_modifier; }
+    inline int get_modifiers() const { return m_modifier; }
 
     std::string to_str() const override {
         std::stringstream result;
@@ -49,15 +49,15 @@ public:
 class MouseScrolledEvent : public Event {
 public:
     MouseScrolledEvent(double xOffset, double yOffset) :
-        m_XOffset(xOffset),
-        m_YOffset(yOffset) {}
+        m_xOffset(xOffset),
+        m_yOffset(yOffset) {}
 
-    inline double GetXOffset() const { return m_XOffset; }
-    inline double GetYOffset() const { return m_YOffset; }
+    inline double get_offset_x() const { return m_xOffset; }
+    inline double get_offset_y() const { return m_yOffset; }
 
     EVENT_CLASS_TYPE(EVENT_MOUSE_SCROLLED);
 private:
-    double m_XOffset, m_YOffset;
+    double m_xOffset, m_yOffset;
 };
 
 class MouseMovedEvent : public Event {
@@ -66,8 +66,8 @@ public:
         m_xPos(xpos),
         m_yPos(ypos) {}
 
-    inline double GetXPos() const { return m_xPos; }
-    inline double GetYPos() const { return m_yPos; }
+    inline double get_pos_x() const { return m_xPos; }
+    inline double get_pos_y() const { return m_yPos; }
 
     std::string to_str() const override {
         std::stringstream result;

@@ -28,8 +28,8 @@ public:
         m_xPos(x),
         m_yPos(y) {}
 
-    inline int get_position_x() const { return m_xPos; }
-    inline int get_position_y() const { return m_yPos; }
+    inline int get_pos_x() const { return m_xPos; }
+    inline int get_pos_y() const { return m_yPos; }
 
     std::string to_str() const override {
         std::stringstream result;
