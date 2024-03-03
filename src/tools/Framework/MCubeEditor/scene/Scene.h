@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/stdincludes.h"
+#include "Camera.h"
 #include "FixedChunk.h"
 #include "vulkan/rendering/RenderContext.h"
 #include "vulkan/core/RenderPass.h"
@@ -16,7 +17,7 @@ public:
 
     void create_material(vk::Device& device);
 
-    void render(vk::RenderContext& renderContext, glm::mat4 viewMatrix);
+    void render(vk::RenderContext& renderContext, Camera& camera);
 private:
     std::vector<FixedChunk*> m_chunks;
 

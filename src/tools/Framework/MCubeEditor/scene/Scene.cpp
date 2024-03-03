@@ -19,6 +19,8 @@ Scene::Scene()
 
 Scene::~Scene()
 {
+    m_material.pipeline->get_device().wait_idle();
+
     for( auto& chunk : m_chunks )
     {
         delete chunk;
@@ -29,7 +31,7 @@ Scene::~Scene()
     delete m_material.pipelineLayout;
 }
 
-void Scene::render(vk::RenderContext& renderContext, glm::mat4 viewMatrix)
+void Scene::render(vk::RenderContext& renderContext, Camera& camera)
 {
     vk::CommandBuffer& mainCommandBuffer = renderContext.begin(vk::CommandBuffer::ResetMode::AlwaysAllocate);
     vk::RenderTarget& activeRenderTarget = renderContext.get_active_frame().get_render_target();
@@ -39,6 +41,9 @@ void Scene::render(vk::RenderContext& renderContext, glm::mat4 viewMatrix)
 
     mainCommandBuffer.begin_render_pass(&activeRenderTarget, *m_material.renderPass, activeFramebuffer, m_clearColors);
     mainCommandBuffer.bind_pipeline(*m_material.pipeline);
+
+    // Set camera
+    mainCommandBuffer.push_constants(*m_material.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Camera::MatrixData), &camera.get_matrix_data());
 
     VkViewport viewport{ };
     viewport.width = static_cast<float>(activeRenderTarget.get_extent().width);
@@ -109,6 +114,23 @@ void Scene::create_material(vk::Device& device)
     m_material.pipelineLayout = new vk::PipelineLayout(device, modules);
     m_material.pipelineState.set_pipeline_layout(*m_material.pipelineLayout);
     m_material.pipelineState.set_render_pass(*m_material.renderPass);
+
+    VkVertexInputBindingDescription bindingDescription{ };
+    bindingDescription.binding = 0;
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindingDescription.stride = sizeof(glm::vec3);
+
+    VkVertexInputAttributeDescription attributeDescription{ };
+    attributeDescription.binding = 0;
+    attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescription.location = 0;
+    attributeDescription.offset = 0;
+
+    vk::VertexInputStageState inputStage{ };
+    inputStage.bindings.push_back(bindingDescription);
+    inputStage.attributes.push_back(attributeDescription);
+
+    m_material.pipelineState.set_vertex_input_state(inputStage);
 
     vk::ColorBlendState colorstate;
     colorstate.attachments.push_back(vk::ColorBlendAttachmentState());
