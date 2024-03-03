@@ -2,7 +2,7 @@
 
 Camera::Camera(glm::mat4 projectionMatrix) :
     m_position(0.f, 0.f, 0.f),
-    m_rotation(),
+    m_rotation(glm::quat(glm::vec3(0.f))),
     m_matrices({ projectionMatrix, glm::mat4(1.f) }),
     m_dirty(true)
 {
@@ -11,12 +11,15 @@ Camera::Camera(glm::mat4 projectionMatrix) :
 
 void Camera::rotate(const glm::vec3& eulerRotation)
 {
-
+    rotate(glm::angleAxis(eulerRotation.z, glm::vec3(0.f, 0.f, 1.f)));
+    rotate(glm::angleAxis(eulerRotation.y, glm::vec3(0.f, 1.f, 0.f)));
+    rotate(glm::angleAxis(eulerRotation.x, glm::vec3(1.f, 0.f, 0.f)));
 }
 
 void Camera::rotate(const glm::quat& rotation)
 {
-
+    m_rotation *= rotation;
+    m_dirty = true;
 }
 
 void Camera::translate(const glm::vec3& translation)
@@ -27,7 +30,6 @@ void Camera::translate(const glm::vec3& translation)
     }
 
     m_position += translation;
-    m_matrices.view = glm::translate(m_matrices.view, -translation);
     m_dirty = true;
 }
 
@@ -46,18 +48,28 @@ glm::quat Camera::get_rotation() const
     return m_rotation;
 }
 
-glm::mat4 Camera::get_projection_matrix() const
+glm::mat4 Camera::get_projection_matrix()
 {
     return m_matrices.projection;
 }
 
-glm::mat4 Camera::get_view_matrix() const
+glm::mat4 Camera::get_view_matrix()
 {
+    if( m_dirty )
+    {
+        return glm::toMat4(m_rotation) * glm::translate(glm::mat4(1.f), -m_position);
+    }
+
     return m_matrices.view;
 }
 
-const Camera::MatrixData& Camera::get_matrix_data() const
+const Camera::MatrixData& Camera::get_matrix_data()
 {
+    if( m_dirty )
+    {
+        m_matrices.view = get_view_matrix();
+        m_dirty = false;
+    }
     return m_matrices;
 }
 

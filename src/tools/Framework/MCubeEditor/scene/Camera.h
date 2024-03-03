@@ -28,11 +28,11 @@ public:
 
     glm::quat get_rotation() const;
 
-    glm::mat4 get_projection_matrix() const;
+    glm::mat4 get_projection_matrix();
 
-    glm::mat4 get_view_matrix() const;
+    glm::mat4 get_view_matrix();
 
-    const MatrixData& get_matrix_data() const;
+    const MatrixData& get_matrix_data();
 protected:
     Camera(glm::mat4 projectionMatrix);
 protected:
