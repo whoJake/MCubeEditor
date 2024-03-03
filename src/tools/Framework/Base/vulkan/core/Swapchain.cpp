@@ -40,7 +40,10 @@ Swapchain::Swapchain(Swapchain& oldSwapchain,
     m_supportedFormats.resize(formatCount);
     vkGetPhysicalDeviceSurfaceFormatsKHR(device.get_gpu().get_handle(), surface, &formatCount, m_supportedFormats.data());
 
-    JCLOG_INFO(get_device().get_log(), "Found {} supported surface formats.", formatCount);
+    if( oldSwapchain.get_handle() == VK_NULL_HANDLE )
+    {
+        JCLOG_INFO(get_device().get_log(), "Found {} supported surface formats.", formatCount);
+    }
 
     uint32_t presentModeCount{ 0 };
     VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(device.get_gpu().get_handle(), surface, &presentModeCount, nullptr),
@@ -49,7 +52,10 @@ Swapchain::Swapchain(Swapchain& oldSwapchain,
     m_supportedPresentModes.resize(presentModeCount);
     vkGetPhysicalDeviceSurfacePresentModesKHR(device.get_gpu().get_handle(), surface, &presentModeCount, m_supportedPresentModes.data());
 
-    JCLOG_INFO(get_device().get_log(), "Found {} supported present modes.", presentModeCount);
+    if( oldSwapchain.get_handle() == VK_NULL_HANDLE )
+    {
+        JCLOG_INFO(get_device().get_log(), "Found {} supported present modes.", presentModeCount);
+    }
 
     m_properties.oldSwapchain = oldSwapchain.get_handle();
     m_properties.imageCount = choose_image_count(imageCount, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
