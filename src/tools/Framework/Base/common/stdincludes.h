@@ -19,3 +19,4 @@
 #include "exceptions.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_RADIANS
