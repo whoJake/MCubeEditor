@@ -114,6 +114,11 @@ void CommandBuffer::set_scissor(VkRect2D scissor)
     vkCmdSetScissor(get_handle(), 0, 1, &scissor);
 }
 
+void CommandBuffer::push_constants(PipelineLayout& layout, VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size, const void* pData)
+{
+    vkCmdPushConstants(get_handle(), layout.get_handle(), stageFlags, offset, size, pData);
+}
+
 void CommandBuffer::bind_vertex_buffers(Buffer& buffer, uint32_t binding)
 {
     bind_vertex_buffers({ &buffer }, binding, 1);

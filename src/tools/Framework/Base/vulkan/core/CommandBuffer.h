@@ -60,6 +60,8 @@ public:
     void set_viewport(VkViewport viewport);
 
     void set_scissor(VkRect2D scissor);
+    
+    void push_constants(PipelineLayout& layout, VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size, const void* pData);
 
     void bind_vertex_buffers(Buffer& buffer, uint32_t binding);
 
