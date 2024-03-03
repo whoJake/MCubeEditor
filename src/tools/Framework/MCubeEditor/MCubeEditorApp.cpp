@@ -71,7 +71,32 @@ void MCubeEditorApp::update(double deltaTime)
     float speed = 5.f;
     movement *= speed * deltaTime;
 
-    m_camera->translate(movement);
+    if( Input::get_key_pressed(KeyCode::L) )
+    {
+        Input::set_cursor_lock_state(get_window(), CursorLockState::LOCKED);
+    }
+    else if( Input::get_key_released(KeyCode::L) )
+    {
+        Input::set_cursor_lock_state(get_window(), CursorLockState::NONE);
+    }
+
+    glm::vec3 cameraForward = glm::vec3(0.f, 0.f, 1.f) * m_camera->get_rotation();
+    glm::vec3 cameraRight = glm::vec3(1.f, 0.f, 0.f) * m_camera->get_rotation();
+    
+    if( Input::get_key_down(KeyCode::L) )
+    {
+        float sensitivity = 50.f;
+
+        float mouseX = sensitivity * deltaTime * Input::get_mouse_move_horizontal();
+        float mouseY = sensitivity * deltaTime * Input::get_mouse_move_vertical();
+
+        m_camera->rotate(glm::angleAxis(glm::radians(mouseY), cameraRight));
+        m_camera->rotate(glm::angleAxis(glm::radians(mouseX), glm::vec3(0.f, 1.f, 0.f)));
+    }
+
+    glm::vec3 translation = cameraRight * movement.x + cameraForward * movement.z + glm::vec3(0.f, 1.f, 0.f) * movement.y;
+
+    m_camera->translate(translation);
     m_scene->render(get_render_context(), *m_camera);
 
     Input::tick();

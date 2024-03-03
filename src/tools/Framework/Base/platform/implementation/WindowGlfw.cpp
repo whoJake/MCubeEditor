@@ -158,6 +158,50 @@ void WindowGlfw::set_mode(const Window::Mode& mode)
     }
 }
 
+void WindowGlfw::set_cursor_lock_state(CursorLockState state)
+{
+    switch( state )
+    {
+    case CursorLockState::NONE:
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        break;
+    case CursorLockState::LOCKED:
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if( glfwRawMouseMotionSupported() )
+        {
+            glfwSetInputMode(m_handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+        break;
+    }
+}
+
+CursorLockState WindowGlfw::get_cursor_lock_state() const
+{
+    switch( glfwGetInputMode(m_handle, GLFW_CURSOR) )
+    {
+    case GLFW_CURSOR_NORMAL:
+        return CursorLockState::NONE;
+    case GLFW_CURSOR_DISABLED:
+        return CursorLockState::LOCKED;
+    default:
+        return CursorLockState::NONE;
+    }
+}
+
+double WindowGlfw::poll_mouse_pos_x() const
+{
+    double x, y;
+    glfwGetCursorPos(m_handle, &x, &y);
+    return x;
+}
+
+double WindowGlfw::poll_mouse_pos_y() const
+{
+    double x, y;
+    glfwGetCursorPos(m_handle, &x, &y);
+    return y;
+}
+
 void WindowGlfw::setup_events() const
 {
     // Window Events
