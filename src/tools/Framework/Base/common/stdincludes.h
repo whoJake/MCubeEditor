@@ -17,3 +17,5 @@
 
 #include "logging/jclog.h"
 #include "exceptions.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
