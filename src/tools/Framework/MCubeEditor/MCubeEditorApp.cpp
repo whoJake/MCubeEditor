@@ -71,11 +71,11 @@ void MCubeEditorApp::update(double deltaTime)
     float speed = 5.f;
     movement *= speed * deltaTime;
 
-    if( Input::get_key_pressed(KeyCode::L) )
+    if( Input::get_mouse_button_pressed(1) )
     {
         Input::set_cursor_lock_state(get_window(), CursorLockState::LOCKED);
     }
-    else if( Input::get_key_released(KeyCode::L) )
+    else if( Input::get_mouse_button_released(1) )
     {
         Input::set_cursor_lock_state(get_window(), CursorLockState::NONE);
     }
@@ -83,9 +83,9 @@ void MCubeEditorApp::update(double deltaTime)
     glm::vec3 cameraForward = glm::vec3(0.f, 0.f, 1.f) * m_camera->get_rotation();
     glm::vec3 cameraRight = glm::vec3(1.f, 0.f, 0.f) * m_camera->get_rotation();
     
-    if( Input::get_key_down(KeyCode::L) )
+    if( Input::get_mouse_button_down(1) )
     {
-        float sensitivity = 50.f;
+        float sensitivity = 80.f;
 
         float mouseX = sensitivity * deltaTime * Input::get_mouse_move_horizontal();
         float mouseY = sensitivity * deltaTime * Input::get_mouse_move_vertical();

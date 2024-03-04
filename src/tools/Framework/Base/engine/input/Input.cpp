@@ -28,6 +28,36 @@ bool Input::get_key_released(KeyCode key)
     return get_key_state(key) == KeyState::RELEASED;
 }
 
+bool Input::get_mouse_button_pressed(uint8_t button)
+{
+    if( button >= INPUT_MAX_MOUSE_BUTTONS )
+    {
+        throw std::exception("Polling for mouse button that is past the max supported mouse buttons.");
+    }
+
+    return get_mouse_key_state(button) == KeyState::PRESSED;
+}
+
+bool Input::get_mouse_button_down(uint8_t button)
+{
+    if( button >= INPUT_MAX_MOUSE_BUTTONS )
+    {
+        throw std::exception("Polling for mouse button that is past the max supported mouse buttons.");
+    }
+
+    return get_mouse_key_state(button) >= KeyState::PRESSED;
+}
+
+bool Input::get_mouse_button_released(uint8_t button)
+{
+    if( button >= INPUT_MAX_MOUSE_BUTTONS )
+    {
+        throw std::exception("Polling for mouse button that is past the max supported mouse buttons.");
+    }
+
+    return get_mouse_key_state(button) == KeyState::RELEASED;
+}
+
 double Input::get_mouse_move_horizontal()
 {
     return get_instance()->m_previousMouseX - get_instance()->m_currentMouseX;
@@ -62,6 +92,21 @@ void Input::tick()
             break;
         }
     }
+
+    for( KeyState& state : get_instance()->m_mouseKeyStates )
+    {
+        switch( state )
+        {
+        case KeyState::RELEASED:
+            state = KeyState::NONE;
+            break;
+        case KeyState::PRESSED:
+            state = KeyState::HELD;
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 bool Input::register_event(Event& event)
@@ -83,6 +128,11 @@ KeyState& Input::get_key_state(KeyCode code)
     return get_instance()->m_keyStates[static_cast<size_t>(code)];
 }
 
+KeyState& Input::get_mouse_key_state(uint8_t button)
+{
+    return get_instance()->m_mouseKeyStates[static_cast<size_t>(button)];
+}
+
 bool Input::register_key_press_event(KeyPressedEvent& event)
 {
     KeyState& currentState = get_key_state(event.get_key_code());
@@ -102,11 +152,29 @@ bool Input::register_key_release_event(KeyReleasedEvent& event)
 
 bool Input::register_mouse_press_event(MousePressedEvent& event)
 {
+    if( event.get_button() >= INPUT_MAX_MOUSE_BUTTONS )
+    {
+        throw std::exception("Trying to register mouse button that is past the max supported mouse buttons.");
+    }
+
+    KeyState& currentState = get_mouse_key_state(static_cast<uint8_t>(event.get_button()));
+    if( currentState != KeyState::HELD )
+    {
+        currentState = KeyState::PRESSED;
+    }
+
     return false;
 }
 
 bool Input::register_mouse_release_event(MouseReleasedEvent& event)
 {
+    if( event.get_button() >= INPUT_MAX_MOUSE_BUTTONS )
+    {
+        throw std::exception("Trying to register mouse button that is past the max supported mouse buttons.");
+    }
+
+    get_mouse_key_state(static_cast<uint8_t>(event.get_button())) = KeyState::RELEASED;
+
     return false;
 }
 
@@ -122,8 +190,7 @@ bool Input::register_mouse_move_event(MouseMovedEvent& event)
     return false;
 }
 
-Input::Input() :
-    m_keyStates()
+Input::Input()
 { }
 
 Input* Input::get_instance()

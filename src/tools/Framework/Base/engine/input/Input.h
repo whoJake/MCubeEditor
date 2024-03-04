@@ -19,6 +19,8 @@ enum class KeyState
     HELD,
 };
 
+#define INPUT_MAX_MOUSE_BUTTONS 16
+
 class Input
 {
 public:
@@ -27,6 +29,10 @@ public:
     static bool get_key_pressed(KeyCode key);
     static bool get_key_down(KeyCode key);
     static bool get_key_released(KeyCode key);
+
+    static bool get_mouse_button_pressed(uint8_t button);
+    static bool get_mouse_button_down(uint8_t button);
+    static bool get_mouse_button_released(uint8_t button);
 
     static double get_mouse_move_horizontal();
     static double get_mouse_move_vertical();
@@ -40,6 +46,8 @@ public:
 private:
     static KeyState& get_key_state(KeyCode code);
 
+    static KeyState& get_mouse_key_state(uint8_t button);
+
     static bool register_key_press_event(KeyPressedEvent& event);
 
     static bool register_key_release_event(KeyReleasedEvent& event);
@@ -52,7 +60,9 @@ private:
 
     static bool register_mouse_move_event(MouseMovedEvent& event);
 private:
-    std::array<KeyState, static_cast<size_t>(KeyCode::KEYCODE_COUNT)> m_keyStates;
+    std::array<KeyState, static_cast<size_t>(KeyCode::KEYCODE_COUNT)> m_keyStates{ };
+    std::array<KeyState, INPUT_MAX_MOUSE_BUTTONS> m_mouseKeyStates{ };
+
     CursorLockState m_primaryCursorLockState{ CursorLockState::NONE };
 
     double m_currentMouseX{ 0.0 };
