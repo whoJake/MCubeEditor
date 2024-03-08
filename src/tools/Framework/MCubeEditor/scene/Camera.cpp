@@ -5,12 +5,11 @@ Camera::Camera(glm::mat4 projectionMatrix) :
     m_rotation(glm::quat(glm::vec3(0.f))),
     m_matrices({ projectionMatrix, glm::mat4(1.f) }),
     m_dirty(true)
-{
-    m_matrices.projection[1][1] *= -1;
-}
+{ }
 
 void Camera::rotate(const glm::vec3& eulerRotation)
 {
+    // broken
     rotate(glm::angleAxis(eulerRotation.z, glm::vec3(0.f, 0.f, 1.f)));
     rotate(glm::angleAxis(eulerRotation.y, glm::vec3(0.f, 1.f, 0.f)));
     rotate(glm::angleAxis(eulerRotation.x, glm::vec3(1.f, 0.f, 0.f)));
@@ -74,7 +73,7 @@ const Camera::MatrixData& Camera::get_matrix_data()
 }
 
 PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float nearZ, float farZ) :
-    Camera(glm::perspective(fov, aspect, nearZ, farZ)),
+    Camera(glm::perspective(glm::radians(fov), aspect, nearZ, farZ)),
     m_fov(fov),
     m_aspect(aspect),
     m_nearZ(nearZ),
@@ -89,8 +88,7 @@ void PerspectiveCamera::set_fov(float fov)
     }
 
     m_fov = fov;
-    m_matrices.projection = glm::perspective(fov, m_aspect, m_nearZ, m_farZ);
-    m_matrices.projection[1][1] *= -1;
+    m_matrices.projection = glm::perspective(glm::radians(fov), m_aspect, m_nearZ, m_farZ);
     m_dirty = true;
 }
 
@@ -102,8 +100,7 @@ void PerspectiveCamera::set_aspect(float aspect)
     }
 
     m_aspect = aspect;
-    m_matrices.projection = glm::perspective(m_fov, m_aspect, m_nearZ, m_farZ);
-    m_matrices.projection[1][1] *= -1;
+    m_matrices.projection = glm::perspective(glm::radians(m_fov), m_aspect, m_nearZ, m_farZ);
     m_dirty = true;
 }
 

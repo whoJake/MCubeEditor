@@ -60,12 +60,12 @@ bool Input::get_mouse_button_released(uint8_t button)
 
 double Input::get_mouse_move_horizontal()
 {
-    return get_instance()->m_previousMouseX - get_instance()->m_currentMouseX;
+    return get_instance()->m_currentMouseX - get_instance()->m_previousMouseX;
 }
 
 double Input::get_mouse_move_vertical()
 {
-    return get_instance()->m_previousMouseY - get_instance()->m_currentMouseY;
+    return get_instance()->m_currentMouseY - get_instance()->m_previousMouseY;
 }
 
 CursorLockState Input::get_cursor_lock_state()

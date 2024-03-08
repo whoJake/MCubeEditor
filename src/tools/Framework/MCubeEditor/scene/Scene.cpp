@@ -46,8 +46,9 @@ void Scene::render(vk::RenderContext& renderContext, Camera& camera)
     mainCommandBuffer.push_constants(*m_material.pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Camera::MatrixData), &camera.get_matrix_data());
 
     VkViewport viewport{ };
+    viewport.y = static_cast<float>(activeRenderTarget.get_extent().height);
     viewport.width = static_cast<float>(activeRenderTarget.get_extent().width);
-    viewport.height = static_cast<float>(activeRenderTarget.get_extent().height);
+    viewport.height = -static_cast<float>(activeRenderTarget.get_extent().height);
     viewport.minDepth = 0.f;
     viewport.maxDepth = 1.f;
     mainCommandBuffer.set_viewport(viewport);

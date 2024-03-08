@@ -32,7 +32,8 @@ void MCubeEditorApp::on_app_startup()
     m_scene = std::make_unique<Scene>();
     m_scene->create_material(get_render_context().get_device());
 
-    m_camera = std::make_unique<PerspectiveCamera>(100.f, 4.f / 3.f, 0.02f, 100.f);
+    m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 100.f);
+    m_camera->translate({ 2.f, 2.f, 2.f });
 
     if( get_config().get_arg_provider().has_argument(OPTION_OPENFILE) )
     {
@@ -56,17 +57,17 @@ void MCubeEditorApp::update(double deltaTime)
 {
     glm::vec3 movement{ };
     if( Input::get_key_down(KeyCode::A) )
-        movement.x += 1;
-    if( Input::get_key_down(KeyCode::D) )
         movement.x -= 1;
+    if( Input::get_key_down(KeyCode::D) )
+        movement.x += 1;
     if( Input::get_key_down(KeyCode::S) )
         movement.z += 1;
     if( Input::get_key_down(KeyCode::W) )
         movement.z -= 1;
     if( Input::get_key_down(KeyCode::Space) )
-        movement.y -= 1;
-    if( Input::get_key_down(KeyCode::LeftShift) )
         movement.y += 1;
+    if( Input::get_key_down(KeyCode::LeftShift) )
+        movement.y -= 1;
 
     float speed = 5.f;
     movement *= speed * deltaTime;
@@ -85,7 +86,7 @@ void MCubeEditorApp::update(double deltaTime)
     
     if( Input::get_mouse_button_down(1) )
     {
-        float sensitivity = 80.f;
+        float sensitivity = 70.f;
 
         float mouseX = sensitivity * deltaTime * Input::get_mouse_move_horizontal();
         float mouseY = sensitivity * deltaTime * Input::get_mouse_move_vertical();
