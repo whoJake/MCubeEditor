@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "Mesh.h"
 
 inline static const std::vector<Vertex> s_verticesUnitCube
@@ -40,4 +41,29 @@ inline static const std::vector<uint16_t> s_indicesUnitCube
     //bottom
     1, 5, 0,
     4, 0, 5,
+};
+
+inline static const std::vector<Vertex> s_verticesUnitPlane
+{
+    { { -0.5f, 0.f, -0.5f }, { 0.f, 0.f, 0.f } },
+    { { 0.5f,  0.f, -0.5f }, { 1.f, 0.f, 0.f } },
+    { { -0.5f, 0.f, 0.5f },  { 0.f, 1.f, 0.f } },
+    { { 0.5f,  0.f, 0.5f },  { 1.f, 1.f, 0.f } }
+};
+
+inline static const std::vector<uint16_t> s_indicesUnitPlane
+{
+    0, 2, 1,
+    3, 1, 2,
+
+    1, 2, 0,
+    2, 1, 3
+};
+
+inline static std::function<std::vector<Vertex>(void)> s_createVerticesUnitSphere = [](){
+    std::vector<Vertex> result;
+
+
+
+    return result;
 };

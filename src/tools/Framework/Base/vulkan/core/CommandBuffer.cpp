@@ -140,7 +140,6 @@ void CommandBuffer::bind_vertex_buffers(const std::vector<Buffer*>& buffers, uin
     }
 
     vkCmdBindVertexBuffers(get_handle(), firstBinding, bindingCount, handles.data(), offsets.data());
-
 }
 
 void CommandBuffer::draw_indexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance)

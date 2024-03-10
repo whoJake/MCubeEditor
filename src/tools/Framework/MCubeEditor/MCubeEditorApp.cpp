@@ -111,22 +111,34 @@ void MCubeEditorApp::update(double deltaTime)
 
     if( Input::get_key_pressed(KeyCode::Up) )
     {
+        m_currentUpEntityScale++;
         Entity entity(m_blueprint);
-        entity.transform().scale() *= glm::vec3(m_currentUpEntityScale, 1.f, 1.f);
-        entity.transform().translate({ 0.f, m_currentUpEntityScale * 1.2f, 0.f });
+        entity.transform().scale() *= glm::vec3(m_currentUpEntityScale, 1.f, m_currentUpEntityScale);
+        entity.transform().translate({ 0.f, m_currentUpEntityScale * 1.2f - 1.f, 0.f });
 
         m_scene->insert_entity(entity);
-        m_currentUpEntityScale++;
     }
 
     if( Input::get_key_pressed(KeyCode::Down) )
     {
+        m_currentDownEntityScale++;
         Entity entity(m_blueprint);
-        entity.transform().scale() *= glm::vec3(1.f / m_currentDownEntityScale, 1.f, 1.f);
-        entity.transform().translate({ 0.f, -m_currentDownEntityScale * 1.2f, 0.f });
+        entity.transform().scale() *= glm::vec3(1.f / m_currentDownEntityScale, 1.f, 1.f / m_currentDownEntityScale);
+        entity.transform().translate({ 0.f, -m_currentDownEntityScale * 1.2f + 1.f, 0.f });
 
         m_scene->insert_entity(entity);
-        m_currentDownEntityScale++;
+    }
+
+    if( Input::get_key_pressed(KeyCode::Left) )
+    {
+        m_blueprint->mesh().set_vertices(s_verticesUnitPlane);
+        m_blueprint->mesh().set_indices(s_indicesUnitPlane);
+    }
+
+    if( Input::get_key_pressed(KeyCode::Right) )
+    {
+        m_blueprint->mesh().set_vertices(s_verticesUnitCube);
+        m_blueprint->mesh().set_indices(s_indicesUnitCube);
     }
 
     m_renderer->render_scene(*m_scene, *m_camera);
