@@ -11,7 +11,7 @@ workspace "Framework"
 -- Project names
 prjBase = "Base"
 prjMetadataParserGenerator = "MetadataParserGenerator"
-prjFontAtlus = "FontAtlus"
+prjFontAtlus = "FontAtlas"
 
 prjMCubeEditor = "MCubeEditor"
 
@@ -44,6 +44,9 @@ project (prjBase)
 
         -- glfw
         "%{vendordir}/glfw",
+
+        -- glm
+        "%{vendordir}/glm-1.0.0/glm",
 
         -- pugixml
         "%{vendordir}/pugixml-1.14/src",
