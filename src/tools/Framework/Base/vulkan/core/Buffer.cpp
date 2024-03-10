@@ -29,6 +29,13 @@ Buffer::Buffer(Device&            device,
 }
 
 Buffer::~Buffer() {
+    get_device().wait_idle();
+
+    if( m_mapped)
+    {
+        unmap();
+    }
+
     vmaDestroyBuffer(get_device().get_allocator(), m_handle, m_allocation);
 }
 
@@ -71,6 +78,7 @@ void Buffer::unmap()
 
     vmaUnmapMemory(get_device().get_allocator(), m_allocation);
     m_mapped = false;
+    m_mappedData = nullptr;
 }
 
 } // vk

@@ -25,6 +25,8 @@ public:
 
     ~RenderContext() = default;
     
+    RenderContext(RenderContext&&);
+
     VkSemaphore submit(const Queue&                             queue,
                        CommandBuffer&                           commandBuffer,
                        const std::vector<VkSemaphore>&          waitSemaphores   = { },
@@ -61,6 +63,8 @@ public:
     void update_swapchain(VkExtent2D extent);
 
     inline VkSemaphore get_aquired_semaphore() const { return m_aquiredSemaphore; }
+
+    inline const SwapchainProperties& get_swapchain_properties() const { return m_swapchainProperties; }
 
     void recreate();
 

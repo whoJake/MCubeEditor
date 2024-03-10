@@ -3,6 +3,7 @@
 #include "common/stdincludes.h"
 #include "common/spatial.h"
 #include "Mesh.h"
+#include "MeshRenderer.h"
 
 class Blueprint
 {
@@ -19,7 +20,9 @@ public:
 
     AABoundingBox<> get_bounds() const;
 
-    Mesh<>& mesh();
+    Mesh& mesh();
+
+    MeshRenderer& mesh_renderer();
 
     inline bool operator==(const Blueprint& other)
     {
@@ -29,5 +32,6 @@ private:
     std::string_view m_name;
     size_t m_nameHash{ 0 };
     AABoundingBox<> m_boundingBox{ };
-    Mesh<> m_mesh{ };
+    Mesh m_mesh{ };
+    MeshRenderer m_meshRenderer;
 };

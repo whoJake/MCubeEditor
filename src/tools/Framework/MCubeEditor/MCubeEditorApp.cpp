@@ -6,6 +6,11 @@
 #include "engine/input/Input.h"
 #include "platform/events/Event.h"
 
+#include "vulkan/rendering/RenderContext.h"
+#include "engine/rendering/Blueprint.h"
+#include "engine/rendering/Primitives.h"
+#include "engine/scene/Entity.h"
+
 #define OPTION_OPENFILE "file"
 
 MCubeEditorApp::MCubeEditorApp() :
@@ -29,8 +34,13 @@ MCubeEditorApp::~MCubeEditorApp()
 void MCubeEditorApp::on_app_startup()
 {
     // Do initial startup
+    /*
     m_scene = std::make_unique<Scene>();
     m_scene->create_material(get_render_context().get_device());
+    */
+
+    initialize_scene();
+    m_renderer = std::make_unique<Renderer>(get_render_context());
 
     m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 100.f);
     m_camera->translate({ 2.f, 2.f, 2.f });
@@ -88,8 +98,8 @@ void MCubeEditorApp::update(double deltaTime)
     {
         float sensitivity = 70.f;
 
-        float mouseX = sensitivity * deltaTime * Input::get_mouse_move_horizontal();
-        float mouseY = sensitivity * deltaTime * Input::get_mouse_move_vertical();
+        float mouseX = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_horizontal());
+        float mouseY = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_vertical());
 
         m_camera->rotate(glm::angleAxis(glm::radians(mouseY), cameraRight));
         m_camera->rotate(glm::angleAxis(glm::radians(mouseX), glm::vec3(0.f, 1.f, 0.f)));
@@ -98,7 +108,32 @@ void MCubeEditorApp::update(double deltaTime)
     glm::vec3 translation = cameraRight * movement.x + cameraForward * movement.z + glm::vec3(0.f, 1.f, 0.f) * movement.y;
 
     m_camera->translate(translation);
+
+    if( Input::get_key_pressed(KeyCode::Up) )
+    {
+        Entity entity(m_blueprint);
+        entity.transform().scale() *= glm::vec3(m_currentUpEntityScale, 1.f, 1.f);
+        entity.transform().translate({ 0.f, m_currentUpEntityScale * 1.2f, 0.f });
+
+        m_scene->insert_entity(entity);
+        m_currentUpEntityScale++;
+    }
+
+    if( Input::get_key_pressed(KeyCode::Down) )
+    {
+        Entity entity(m_blueprint);
+        entity.transform().scale() *= glm::vec3(1.f / m_currentDownEntityScale, 1.f, 1.f);
+        entity.transform().translate({ 0.f, -m_currentDownEntityScale * 1.2f, 0.f });
+
+        m_scene->insert_entity(entity);
+        m_currentDownEntityScale++;
+    }
+
+    m_renderer->render_scene(*m_scene, *m_camera);
+
+    /*
     m_scene->render(get_render_context(), *m_camera);
+    */
 
     Input::tick();
 }
@@ -111,6 +146,19 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
     }
 
     return false;
+}
+
+void MCubeEditorApp::initialize_scene()
+{
+    m_scene = std::make_unique<Scene>();
+    
+    m_blueprint = std::make_shared<Blueprint>("TEST_CUBE");
+    m_blueprint->mesh().set_vertices(s_verticesUnitCube);
+    m_blueprint->mesh().set_indices(s_indicesUnitCube);
+
+    Entity entity(m_blueprint);
+
+    m_scene->insert_entity(entity);
 }
 
 // ### Entry Point ###

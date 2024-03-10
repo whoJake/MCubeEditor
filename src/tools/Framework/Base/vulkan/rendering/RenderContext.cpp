@@ -61,6 +61,20 @@ RenderContext::RenderContext(Device&                                device,
     }
 }
 
+RenderContext::RenderContext(RenderContext&& other) :
+    m_device(other.m_device),
+    m_window(other.m_window),
+    m_surfaceExtent(other.m_surfaceExtent),
+    m_threadCount(other.m_threadCount),
+    m_renderTargetCreateFunc(other.m_renderTargetCreateFunc),
+    m_swapchain(std::move(other.m_swapchain)),
+    m_swapchainProperties(other.m_swapchainProperties),
+    m_aquiredSemaphore(other.m_aquiredSemaphore),
+    m_frames(std::move(other.m_frames)),
+    m_activeFrameIndex(other.m_activeFrameIndex),
+    m_frameActive(other.m_frameActive)
+{ }
+
 VkSemaphore RenderContext::submit(const Queue&                             queue,
                                   CommandBuffer&                           commandBuffer,
                                   const std::vector<VkSemaphore>&          waitSemaphores,
