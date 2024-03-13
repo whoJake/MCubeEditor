@@ -154,6 +154,12 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
 {
     if( m_camera )
     {
+        if( e.get_width() <= 0.f
+         || e.get_height() <= 0.f )
+        {
+            return false;
+        }
+
         m_camera->set_aspect(static_cast<float>(e.get_width()) / static_cast<float>(e.get_height()));
     }
 

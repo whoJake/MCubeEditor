@@ -82,7 +82,8 @@ PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float nearZ, float
 
 void PerspectiveCamera::set_fov(float fov)
 {
-    if( fov == m_fov )
+    if( fov == m_fov
+     || fov == 0.f )
     {
         return;
     }
@@ -94,7 +95,8 @@ void PerspectiveCamera::set_fov(float fov)
 
 void PerspectiveCamera::set_aspect(float aspect)
 {
-    if( m_aspect == aspect )
+    if( m_aspect == aspect
+      || aspect == 0.f)
     {
         return;
     }
