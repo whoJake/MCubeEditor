@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/stdincludes.h"
+#include "common/mathplus.h"
 
 struct Vertex
 {

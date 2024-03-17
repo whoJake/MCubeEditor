@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mesh.h"
+#include "engine/scene/gameplay/Mesh.h"
 #include "vulkan/core/Buffer.h"
 #include "vulkan/rendering/RenderContext.h"
 

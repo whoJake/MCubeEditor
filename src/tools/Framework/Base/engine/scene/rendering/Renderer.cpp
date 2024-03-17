@@ -2,7 +2,7 @@
 
 #include "common/fileio.h"
 #include "vulkan/core/Pipeline.h"
-#include "Blueprint.h"
+#include "engine/scene/gameplay/Blueprint.h"
 
 Renderer::Renderer(vk::RenderContext& context) :
     m_context(context)
@@ -64,8 +64,10 @@ void Renderer::render_scene(Scene& scene, Camera& camera)
         &camera.get_matrix_data());
 
 
-    for( Entity* entity : scene.get_scene_entities() )
+    for( const auto& entitymap : scene.get_scene_entities() )
     {
+        const Entity* entity = &entitymap.second;
+
         glm::mat4 model = entity->transform().as_matrix();
 
         // Set model
@@ -76,7 +78,7 @@ void Renderer::render_scene(Scene& scene, Camera& camera)
             sizeof(glm::mat4),
             &model);
 
-        Blueprint& blueprint = entity->blueprint();
+        Blueprint& blueprint = *scene.get_blueprint(entity->get_blueprint_id());
         mainCmdBuffer.bind_vertex_buffers(blueprint.mesh_renderer().get_vertex_buffer(m_context), 0);
         mainCmdBuffer.bind_index_buffer(blueprint.mesh_renderer().get_index_buffer(m_context), VK_INDEX_TYPE_UINT16);
 

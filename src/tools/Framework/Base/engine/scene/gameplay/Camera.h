@@ -1,8 +1,7 @@
 #pragma once
 
 #include "common/stdincludes.h"
-#include "glm.hpp"
-#include "gtx/quaternion.hpp"
+#include "common/mathplus.h"
 
 #include "vulkan/core/Buffer.h"
 

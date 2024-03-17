@@ -7,9 +7,9 @@
 #include "platform/events/Event.h"
 
 #include "vulkan/rendering/RenderContext.h"
-#include "engine/rendering/Blueprint.h"
-#include "engine/rendering/Primitives.h"
-#include "engine/scene/Entity.h"
+#include "engine/scene/gameplay/Blueprint.h"
+#include "engine/scene/gameplay/Primitives.h"
+#include "engine/scene/gameplay/Entity.h"
 
 #define OPTION_OPENFILE "file"
 
@@ -116,7 +116,7 @@ void MCubeEditorApp::update(double deltaTime)
         entity.transform().scale() *= glm::vec3(m_currentUpEntityScale, 1.f, m_currentUpEntityScale);
         entity.transform().translate({ 0.f, m_currentUpEntityScale * 1.2f - 1.f, 0.f });
 
-        m_scene->insert_entity(entity);
+        m_scene->request_create_entity(std::move(entity));
     }
 
     if( Input::get_key_pressed(KeyCode::Down) )
@@ -126,26 +126,28 @@ void MCubeEditorApp::update(double deltaTime)
         entity.transform().scale() *= glm::vec3(1.f / m_currentDownEntityScale, 1.f, 1.f / m_currentDownEntityScale);
         entity.transform().translate({ 0.f, -m_currentDownEntityScale * 1.2f + 1.f, 0.f });
 
-        m_scene->insert_entity(entity);
+        m_scene->request_create_entity(std::move(entity));
     }
+
+    Blueprint& blueprint = *m_scene->get_blueprint(m_blueprint);
 
     if( Input::get_key_pressed(KeyCode::Left) )
     {
-        m_blueprint->mesh().set_vertices(s_verticesUnitPlane);
-        m_blueprint->mesh().set_indices(s_indicesUnitPlane);
+        blueprint.mesh().set_vertices(s_verticesUnitPlane);
+        blueprint.mesh().set_indices(s_indicesUnitPlane);
     }
 
     if( Input::get_key_pressed(KeyCode::Right) )
     {
-        m_blueprint->mesh().set_vertices(s_verticesUnitCube);
-        m_blueprint->mesh().set_indices(s_indicesUnitCube);
+        blueprint.mesh().set_vertices(s_verticesUnitCube);
+        blueprint.mesh().set_indices(s_indicesUnitCube);
     }
 
     m_renderer->render_scene(*m_scene, *m_camera);
 
-    /*
-    m_scene->render(get_render_context(), *m_camera);
-    */
+    m_scene->resolve_creation_queue();
+    m_scene->resolve_destruction_queue();
+    m_scene->sync_proxies();
 
     Input::tick();
 }
@@ -168,15 +170,19 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
 
 void MCubeEditorApp::initialize_scene()
 {
-    m_scene = std::make_unique<Scene>();
+    m_scene = std::make_unique<Scene>("TEST_SCENE");
     
-    m_blueprint = std::make_shared<Blueprint>("TEST_CUBE");
-    m_blueprint->mesh().set_vertices(s_verticesUnitCube);
-    m_blueprint->mesh().set_indices(s_indicesUnitCube);
+    Blueprint blueprint("TEST_CUBE");
+    blueprint.mesh().set_vertices(s_verticesUnitCube);
+    blueprint.mesh().set_indices(s_indicesUnitCube);
+
+    m_blueprint = blueprint.get_id();
 
     Entity entity(m_blueprint);
 
-    m_scene->insert_entity(entity);
+    m_scene->request_create_blueprint(std::move(blueprint));
+    m_scene->request_create_entity(std::move(entity));
+    m_scene->resolve_creation_queue();
 }
 
 // ### Entry Point ###

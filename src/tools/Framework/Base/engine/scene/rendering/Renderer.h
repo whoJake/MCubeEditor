@@ -2,7 +2,7 @@
 
 #include "vulkan/rendering/RenderContext.h"
 #include "engine/scene/Scene.h"
-#include "Camera.h"
+#include "engine/scene/gameplay/Camera.h"
 
 
 class Renderer
