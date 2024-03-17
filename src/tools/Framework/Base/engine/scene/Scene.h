@@ -1,6 +1,8 @@
 #pragma once
 
 #include "common/stdincludes.h"
+#include "common/threading.h"
+
 #include "gameplay/Entity.h"
 #include "gameplay/Blueprint.h"
 #include "rendering/proxies/EntityProxy.h"

@@ -2,15 +2,17 @@
 
 #include "common/mathplus.h"
 #include "engine/scene/gameplay/Entity.h"
+#include "common/spatial.h"
 
 class EntityProxy
 {
 public:
+    EntityProxy(Entity* entity);
+    ~EntityProxy() = default;
 
-    inline void sync(Entity& entity){ };
+    void sync();
 private:
-    glm::vec3 m_position;
-    glm::vec3 m_scale;
-    glm::vec3 m_rotation;
+    Entity* m_entity;
+    Transform m_transform;
     uint32_t m_blueprintProxy;
 };

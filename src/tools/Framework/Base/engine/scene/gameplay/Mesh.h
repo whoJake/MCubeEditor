@@ -26,6 +26,8 @@ public:
     ~Mesh() = default;
     Mesh(Mesh&&) = default;
     Mesh(const Mesh&) = default;
+    Mesh& operator=(Mesh&&) = default;
+    Mesh& operator=(const Mesh&) = default;
 
     void set_vertex(size_t i, const V& vertex);
     void set_index(size_t i, const T& index);

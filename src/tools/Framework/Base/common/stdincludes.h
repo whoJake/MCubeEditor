@@ -15,7 +15,6 @@
 #include <limits>
 #include <chrono>
 #include <queue>
-#include <mutex>
 
 #include "logging/jclog.h"
 #include "exceptions.h"

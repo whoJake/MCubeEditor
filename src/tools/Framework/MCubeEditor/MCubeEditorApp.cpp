@@ -65,6 +65,10 @@ void MCubeEditorApp::on_event(Event& e)
 
 void MCubeEditorApp::update(double deltaTime)
 {
+    static double dt = deltaTime;
+    dt = dt * 0.95 + deltaTime * 0.05;
+    get_window().set_title(std::format("fps: {}",  static_cast<uint32_t>(1.0 / dt)));
+
     glm::vec3 movement{ };
     if( Input::get_key_down(KeyCode::A) )
         movement.x -= 1;

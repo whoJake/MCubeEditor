@@ -71,7 +71,7 @@ void Scene::sync_proxies()
 
         if( entit != m_entityProxies.end() )
         {
-            entit->second.sync(entity.second);
+            entit->second.sync();
         }
 
         if( bpit != m_blueprintProxies.end() )
@@ -80,7 +80,7 @@ void Scene::sync_proxies()
 
             if( it != m_blueprints.end() )
             {
-                bpit->second.sync(it->second.blueprint);
+                bpit->second.sync();
             }
         }
     }
@@ -96,12 +96,17 @@ void Scene::resolve_creation_queue()
             bpid_t insertId = m_blueprintCreationQueue.front().get_id();
             if( !m_blueprints.contains(insertId) )
             {
-                m_blueprints[insertId] = { std::move(m_blueprintCreationQueue.front()), 0 };
+                m_blueprints.emplace(std::piecewise_construct,
+                                     std::tuple(insertId),
+                                     std::tuple(std::move(m_blueprintCreationQueue.front()), 0));
+                // m_blueprints[insertId] = { std::move(m_blueprintCreationQueue.front()), 0 };
             }
 
             if( !m_blueprintProxies.contains(insertId) )
             {
-                m_blueprintProxies[insertId] = { };
+                m_blueprintProxies.emplace(std::piecewise_construct,
+                                           std::tuple(insertId),
+                                           std::tuple(&(m_blueprints[insertId].blueprint)));
             }
         }
     }
@@ -112,8 +117,13 @@ void Scene::resolve_creation_queue()
         for( ; !m_entityCreationQueue.empty(); m_entityCreationQueue.pop() )
         {
             entid_t insertId = m_entityCreationQueue.front().get_id();
-            Entity& insertedEntity = m_entities[insertId] = std::move(m_entityCreationQueue.front());
-            m_entityProxies.emplace(std::make_pair(insertId, EntityProxy{ }));
+            Entity& insertedEntity = m_entities.emplace(std::piecewise_construct,
+                                                        std::tuple(insertId),
+                                                        std::tuple(std::move(m_entityCreationQueue.front()))).first->second;
+
+            m_entityProxies.emplace(std::piecewise_construct,
+                                    std::tuple(insertId),
+                                    std::tuple(&insertedEntity));
 
             auto it = m_blueprints.find(insertedEntity.get_blueprint_id());
             if( it != m_blueprints.end() )
