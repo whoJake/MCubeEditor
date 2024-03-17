@@ -19,6 +19,8 @@ public:
     void on_event(Event& e) override;
 
     void update(double deltaTime);
+protected:
+    std::vector<VkPresentModeKHR> request_swapchain_present_mode() const override;
 private:
     bool on_window_resize(WindowResizeEvent& e);
     void initialize_scene();

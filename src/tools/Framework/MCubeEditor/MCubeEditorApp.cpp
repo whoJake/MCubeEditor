@@ -189,6 +189,11 @@ void MCubeEditorApp::initialize_scene()
     m_scene->resolve_creation_queue();
 }
 
+std::vector<VkPresentModeKHR> MCubeEditorApp::request_swapchain_present_mode() const
+{
+    return { VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
+}
+
 // ### Entry Point ###
 int main(int argc, const char* argv[])
 {
