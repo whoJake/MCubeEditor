@@ -33,12 +33,6 @@ MCubeEditorApp::~MCubeEditorApp()
 
 void MCubeEditorApp::on_app_startup()
 {
-    // Do initial startup
-    /*
-    m_scene = std::make_unique<Scene>();
-    m_scene->create_material(get_render_context().get_device());
-    */
-
     initialize_scene();
     m_renderer = std::make_unique<Renderer>(get_render_context());
 
@@ -137,13 +131,13 @@ void MCubeEditorApp::update(double deltaTime)
 
     if( Input::get_key_pressed(KeyCode::Left) )
     {
-        blueprint.mesh().set_vertices(s_verticesUnitPlane);
+        blueprint.mesh().set_vertices(s_verticesUnitPlane, 0);
         blueprint.mesh().set_indices(s_indicesUnitPlane);
     }
 
     if( Input::get_key_pressed(KeyCode::Right) )
     {
-        blueprint.mesh().set_vertices(s_verticesUnitCube);
+        blueprint.mesh().set_vertices(s_verticesUnitCube, 0);
         blueprint.mesh().set_indices(s_indicesUnitCube);
     }
 
@@ -177,7 +171,7 @@ void MCubeEditorApp::initialize_scene()
     m_scene = std::make_unique<Scene>("TEST_SCENE");
     
     Blueprint blueprint("TEST_CUBE");
-    blueprint.mesh().set_vertices(s_verticesUnitCube);
+    blueprint.mesh().set_vertices(s_verticesUnitCube, 0);
     blueprint.mesh().set_indices(s_indicesUnitCube);
 
     m_blueprint = blueprint.get_id();

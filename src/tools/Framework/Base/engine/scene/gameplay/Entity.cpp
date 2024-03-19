@@ -31,7 +31,7 @@ entid_t Entity::get_id() const
     return m_id;
 }
 
-bpid_t Entity::get_blueprint_id() const
+bpid_t Entity::get_bpid() const
 {
     return m_bpid;
 }

@@ -26,7 +26,7 @@ public:
     const Transform& transform() const;
 
     entid_t get_id() const;
-    bpid_t get_blueprint_id() const;
+    bpid_t get_bpid() const;
 private:
     Transform m_transform;
     bpid_t m_bpid;

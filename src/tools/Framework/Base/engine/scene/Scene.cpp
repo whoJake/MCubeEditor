@@ -32,12 +32,18 @@ void Scene::request_create_blueprint(Blueprint&& blueprint)
     m_blueprintCreationQueue.push(std::move(blueprint));
 }
 
+void Scene::request_destroy_blueprint(bpid_t blueprint)
+{
+    std::lock_guard<std::mutex> lock(m_blueprintDestructionMutex);
+    m_blueprintDestructionQueue.push(blueprint);
+}
+
 Blueprint* Scene::get_blueprint(bpid_t id)
 {
     auto it = m_blueprints.find(id);
     if( it != m_blueprints.end() )
     {
-        return &(it->second).blueprint;
+        return &(it->second);
     }
 
     return nullptr;
@@ -67,16 +73,17 @@ void Scene::sync_proxies()
     for( auto& entity : m_entities )
     {
         auto entit = m_entityProxies.find(entity.second.get_id());
-        auto bpit = m_blueprintProxies.find(entity.second.get_blueprint_id());
+        auto bpit = m_blueprintProxies.find(entity.second.get_bpid());
 
         if( entit != m_entityProxies.end() )
         {
             entit->second.sync();
         }
 
+        // Only sync blueprints that are actually being used?
         if( bpit != m_blueprintProxies.end() )
         {
-            auto it = m_blueprints.find(entity.second.get_blueprint_id());
+            auto it = m_blueprints.find(entity.second.get_bpid());
 
             if( it != m_blueprints.end() )
             {
@@ -88,26 +95,19 @@ void Scene::sync_proxies()
 
 void Scene::resolve_creation_queue()
 {
-    // Create blueprints first
+    // Create blueprints
     {
         std::lock_guard<std::mutex> lock(m_blueprintCreationMutex);
         for( ; !m_blueprintCreationQueue.empty(); m_blueprintCreationQueue.pop() )
         {
             bpid_t insertId = m_blueprintCreationQueue.front().get_id();
-            if( !m_blueprints.contains(insertId) )
-            {
-                m_blueprints.emplace(std::piecewise_construct,
-                                     std::tuple(insertId),
-                                     std::tuple(std::move(m_blueprintCreationQueue.front()), 0));
-                // m_blueprints[insertId] = { std::move(m_blueprintCreationQueue.front()), 0 };
-            }
+            Blueprint& insertedBlueprint = m_blueprints.emplace(std::piecewise_construct,
+                                                                std::tuple(insertId),
+                                                                std::tuple(std::move(m_blueprintCreationQueue.front()))).first->second;
 
-            if( !m_blueprintProxies.contains(insertId) )
-            {
-                m_blueprintProxies.emplace(std::piecewise_construct,
-                                           std::tuple(insertId),
-                                           std::tuple(&(m_blueprints[insertId].blueprint)));
-            }
+            m_blueprintProxies.emplace(std::piecewise_construct,
+                                       std::tuple(insertId),
+                                       std::tuple(&insertedBlueprint));
         }
     }
 
@@ -124,54 +124,48 @@ void Scene::resolve_creation_queue()
             m_entityProxies.emplace(std::piecewise_construct,
                                     std::tuple(insertId),
                                     std::tuple(&insertedEntity));
-
-            auto it = m_blueprints.find(insertedEntity.get_blueprint_id());
-            if( it != m_blueprints.end() )
-            {
-                it->second.references++;
-            }
-            else
-            {
-                // warn that entity has been created without blueprint
-            }
         }
     }
 }
 
 void Scene::resolve_destruction_queue()
 {
-    std::lock_guard<std::mutex> lock(m_entityDestructionMutex);
-    for( ; !m_entityDestructionQueue.empty(); m_entityDestructionQueue.pop() )
+    // Destroy blueprints
     {
-        auto it = m_entities.find(m_entityDestructionQueue.front());
-        if( it != m_entities.end() )
+        std::lock_guard<std::mutex> lock(m_blueprintDestructionMutex);
+        for( ; !m_blueprintDestructionQueue.empty(); m_blueprintDestructionQueue.pop() )
         {
-            // Get its bpid and erase entity
-            bpid_t blueprint = it->second.get_blueprint_id();
-            m_entities.erase(it);
-
-            // Remove a reference from blueprint
-            auto bpit = m_blueprints.find(blueprint);
-            if( bpit != m_blueprints.end() )
+            auto it = m_blueprints.find(m_blueprintDestructionQueue.front());
+            if( it != m_blueprints.end() )
             {
-                // If new reference count is <= 0, destroy that blueprint
-                if( --bpit->second.references <= 0 )
-                {
-                    m_blueprints.erase(bpit);
-                    auto bpit2 = m_blueprintProxies.find(blueprint);
-                    if( bpit2 != m_blueprintProxies.end() )
-                    {
-                        m_blueprintProxies.erase(bpit2);
-                    }
-                }
+                m_blueprints.erase(it);
+            }
+
+            auto it2 = m_blueprintProxies.find(m_blueprintDestructionQueue.front());
+            if( it2 != m_blueprintProxies.end() )
+            {
+                m_blueprintProxies.erase(it2);
             }
         }
+    }
 
-        // Destroy associating proxy
-        auto it2 = m_entityProxies.find(m_entityDestructionQueue.front());
-        if( it2 != m_entityProxies.end() )
+    // Destroy entities
+    {
+        std::lock_guard<std::mutex> lock(m_entityDestructionMutex);
+        for( ; !m_entityDestructionQueue.empty(); m_entityDestructionQueue.pop() )
         {
-            m_entityProxies.erase(it2);
+            auto it = m_entities.find(m_entityDestructionQueue.front());
+            if( it != m_entities.end() )
+            {
+                m_entities.erase(it);
+            }
+
+            // Destroy associating proxy
+            auto it2 = m_entityProxies.find(m_entityDestructionQueue.front());
+            if( it2 != m_entityProxies.end() )
+            {
+                m_entityProxies.erase(it2);
+            }
         }
     }
 }

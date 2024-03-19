@@ -78,13 +78,17 @@ void Renderer::render_scene(Scene& scene, Camera& camera)
             sizeof(glm::mat4),
             &model);
 
-        Blueprint& blueprint = *scene.get_blueprint(entity->get_blueprint_id());
+        Blueprint& blueprint = *scene.get_blueprint(entity->get_bpid());
         mainCmdBuffer.bind_vertex_buffers(blueprint.mesh_renderer().get_vertex_buffer(m_context), 0);
         mainCmdBuffer.bind_index_buffer(blueprint.mesh_renderer().get_index_buffer(m_context), VK_INDEX_TYPE_UINT16);
 
-        mainCmdBuffer.draw_indexed(vk::to_u32(blueprint.mesh().get_index_count()));
+        blueprint.mesh().set_index_dirty(false);
+        for( uint32_t i = 0; i < blueprint.mesh().get_vertex_buffer_count(); i++ )
+        {
+            blueprint.mesh().set_vertex_dirty(i, false);
+        }
 
-        blueprint.mesh().set_dirty(false);
+        mainCmdBuffer.draw_indexed(vk::to_u32(blueprint.mesh().get_index_count()));
     }
 
     mainCmdBuffer.end_render_pass();

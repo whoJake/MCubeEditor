@@ -1,10 +1,10 @@
 #include "Blueprint.h"
 
-Blueprint::Blueprint(const std::string_view& name) :
+Blueprint::Blueprint(const std::string_view& name, uint32_t vertexBufferCount) :
     m_name(name)
 { 
     m_id = static_cast<bpid_t>(std::hash<std::string_view>()(m_name));
-    m_mesh = std::make_unique<Mesh>();
+    m_mesh = std::make_unique<Mesh>(vertexBufferCount);
     m_meshRenderer = std::make_unique<MeshRenderer>(m_mesh.get());
 }
 

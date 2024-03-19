@@ -26,10 +26,10 @@ public:
     void unmap();
 private:
     VkDeviceSize m_size;
-    VkBufferUsageFlags m_usage;
     VmaAllocation m_allocation;
 
     uint8_t* m_mappedData{ nullptr };
+    VkBufferUsageFlags m_usage;
     bool m_mapped{ false };
 };
 

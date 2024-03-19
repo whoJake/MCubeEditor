@@ -28,6 +28,7 @@ public:
     void request_destroy_entity(entid_t entity);
 
     void request_create_blueprint(Blueprint&& blueprint);
+    void request_destroy_blueprint(bpid_t blueprint);
 
     Blueprint* get_blueprint(bpid_t id);
     Entity* get_entity(entid_t id);
@@ -43,13 +44,7 @@ public:
 private:
     std::string_view m_name;
 
-    struct ReferenceCountedBlueprint
-    {
-        Blueprint blueprint;
-        uint32_t references;
-    };
-
-    std::unordered_map<bpid_t, ReferenceCountedBlueprint> m_blueprints;
+    std::unordered_map<bpid_t, Blueprint> m_blueprints;
     std::unordered_map<entid_t, Entity> m_entities;
 
     std::unordered_map<bpid_t, BlueprintProxy> m_blueprintProxies;
@@ -63,4 +58,7 @@ private:
 
     std::queue<Blueprint> m_blueprintCreationQueue;
     std::mutex m_blueprintCreationMutex;
+
+    std::queue<bpid_t> m_blueprintDestructionQueue;
+    std::mutex m_blueprintDestructionMutex;
 };

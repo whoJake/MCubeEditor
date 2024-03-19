@@ -10,7 +10,7 @@ typedef uint32_t bpid_t;
 class Blueprint
 {
 public:
-    Blueprint(const std::string_view& name = "");
+    Blueprint(const std::string_view& name = "", uint32_t vertexBufferCount = 1);
     ~Blueprint();
     Blueprint(Blueprint&&);
     Blueprint(const Blueprint&) = default;

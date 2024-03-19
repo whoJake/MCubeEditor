@@ -37,7 +37,7 @@ vk::Buffer& MeshRenderer::get_vertex_buffer(vk::RenderContext& context)
         }
         else
         {
-            recreate_vertex_buffer(context.get_device(), m_vertexBuffers[frameIndex], m_mesh->get_vertices_size());
+            recreate_vertex_buffer(context.get_device(), m_vertexBuffers[frameIndex], m_mesh->get_vertices_size(0));
             for( int i = 0; i < m_staleVertexBuffers.size(); i++ )
             {
                 m_staleVertexBuffers[i] = true;
@@ -45,15 +45,15 @@ vk::Buffer& MeshRenderer::get_vertex_buffer(vk::RenderContext& context)
             m_staleVertexBuffers[frameIndex] = false;
 
             uint8_t* pData = m_vertexBuffers[frameIndex]->map();
-            memcpy(pData, m_mesh->get_vertices().data(), m_mesh->get_vertices_size());
+            memcpy(pData, m_mesh->get_vertices(0).data(), m_mesh->get_vertices_size(0));
             m_vertexBuffers[frameIndex]->unmap();
         }
     }
     else
     {
-        if( m_mesh->get_dirty() )
+        if( m_mesh->get_vertex_dirty(0) )
         {
-            recreate_vertex_buffer(context.get_device(), m_vertexBuffers[frameIndex], m_mesh->get_vertices_size());
+            recreate_vertex_buffer(context.get_device(), m_vertexBuffers[frameIndex], m_mesh->get_vertices_size(0));
             for( int i = 0; i < m_staleVertexBuffers.size(); i++ )
             {
                 m_staleVertexBuffers[i] = true;
@@ -61,7 +61,7 @@ vk::Buffer& MeshRenderer::get_vertex_buffer(vk::RenderContext& context)
             m_staleVertexBuffers[frameIndex] = false;
 
             uint8_t* pData = m_vertexBuffers[frameIndex]->map();
-            memcpy(pData, m_mesh->get_vertices().data(), m_mesh->get_vertices_size());
+            memcpy(pData, m_mesh->get_vertices(0).data(), m_mesh->get_vertices_size(0));
             m_vertexBuffers[frameIndex]->unmap();
         }
 
@@ -104,7 +104,7 @@ vk::Buffer& MeshRenderer::get_index_buffer(vk::RenderContext& context)
     }
     else
     {
-        if( m_mesh->get_dirty() )
+        if( m_mesh->get_index_dirty() )
         {
             recreate_index_buffer(context.get_device(), m_indexBuffers[frameIndex], m_mesh->get_indices_size());
             for( int i = 0; i < m_staleIndexBuffers.size(); i++ )
