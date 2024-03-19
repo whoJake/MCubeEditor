@@ -21,6 +21,7 @@ public:
     void update(double deltaTime);
 protected:
     std::vector<VkPresentModeKHR> request_swapchain_present_mode() const override;
+    VkPhysicalDeviceFeatures request_physical_device_feature_set() const override;
 private:
     bool on_window_resize(WindowResizeEvent& e);
     void initialize_scene();

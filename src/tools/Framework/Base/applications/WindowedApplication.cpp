@@ -120,9 +120,12 @@ bool WindowedApplication::create_render_context()
             requestedInstanceExtensions,
             requestedValidationLayers);
 
+        vk::PhysicalDevice& activeGpu = m_renderHandles.instance->get_first_gpu();
+        activeGpu.request_features(request_physical_device_feature_set());
+
         m_renderHandles.device = new vk::Device(
             get_log(),
-            m_renderHandles.instance->get_first_gpu(),
+            activeGpu,
             m_window->create_surface(*m_renderHandles.instance),
             requestedDeviceExtensions);
 
@@ -161,6 +164,11 @@ std::vector<const char*> WindowedApplication::request_device_extensions() const
 }
 
 std::vector<const char*> WindowedApplication::request_validation_layers() const
+{
+    return { };
+}
+
+VkPhysicalDeviceFeatures WindowedApplication::request_physical_device_feature_set() const
 {
     return { };
 }

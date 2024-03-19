@@ -141,7 +141,8 @@ void MCubeEditorApp::update(double deltaTime)
         blueprint.mesh().set_indices(s_indicesUnitCube);
     }
 
-    m_renderer->render_scene(*m_scene, *m_camera);
+    uint32_t renderFinished;
+    m_renderer->dispatch_render({ m_scene->get_blueprint_proxies(), m_scene->get_entity_proxies() }, { m_camera.get() }, &renderFinished);
 
     m_scene->resolve_creation_queue();
     m_scene->resolve_destruction_queue();
@@ -186,6 +187,13 @@ void MCubeEditorApp::initialize_scene()
 std::vector<VkPresentModeKHR> MCubeEditorApp::request_swapchain_present_mode() const
 {
     return { VK_PRESENT_MODE_IMMEDIATE_KHR, VK_PRESENT_MODE_FIFO_KHR };
+}
+
+VkPhysicalDeviceFeatures MCubeEditorApp::request_physical_device_feature_set() const
+{
+    VkPhysicalDeviceFeatures features{ };
+    features.fillModeNonSolid = true;
+    return features;
 }
 
 // ### Entry Point ###

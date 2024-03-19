@@ -38,6 +38,8 @@ protected:
     virtual std::vector<VkPresentModeKHR> request_swapchain_present_mode() const;
 
     virtual std::vector<VkSurfaceFormatKHR> request_swapchain_format() const;
+
+    virtual VkPhysicalDeviceFeatures request_physical_device_feature_set() const;
 private:
     bool create_window();
     bool create_window(Window::Properties& properties);
