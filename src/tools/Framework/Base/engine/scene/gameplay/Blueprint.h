@@ -3,7 +3,6 @@
 #include "common/stdincludes.h"
 #include "common/spatial.h"
 #include "Mesh.h"
-#include "engine/scene/rendering/MeshRenderer.h"
 
 typedef uint32_t bpid_t;
 
@@ -24,13 +23,10 @@ public:
 
     Mesh& mesh();
 
-    MeshRenderer& mesh_renderer();
-
     bpid_t get_id() const;
 private:
     std::string_view m_name;
     AABoundingBox<> m_boundingBox{ };
     std::unique_ptr<Mesh> m_mesh;
-    std::unique_ptr<MeshRenderer> m_meshRenderer;
     bpid_t m_id;
 };

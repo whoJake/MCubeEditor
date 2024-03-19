@@ -33,6 +33,9 @@ public:
     Blueprint* get_blueprint(bpid_t id);
     Entity* get_entity(entid_t id);
 
+    const std::unordered_map<bpid_t, BlueprintProxy>& get_blueprint_proxies() const;
+    const std::unordered_map<entid_t, EntityProxy>& get_entity_proxies() const;
+
     void update_physics();
 
     void update_gamestate();

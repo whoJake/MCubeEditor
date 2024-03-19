@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/stdincludes.h"
-#include "engine/scene/gameplay/Blueprint.h"
+#include "engine/scene/rendering/proxies/BlueprintProxy.h"
 #include "engine/scene/gameplay/Mesh.h"
 #include "vulkan/core/Buffer.h"
 #include "vulkan/rendering/RenderContext.h"
@@ -36,12 +36,15 @@ public:
     SceneBufferManager(vk::RenderContext& renderContext);
     ~SceneBufferManager();
 
-    BlueprintBuffers& get_mesh_buffer_data(Blueprint& blueprint, BufferLoadingStrategy strategy = BufferLoadingStrategy::Dynamic);
+    BlueprintBuffers& get_mesh_buffer_data(const BlueprintProxy& blueprint, BufferLoadingStrategy strategy = BufferLoadingStrategy::Dynamic);
 private:
     std::vector<BufferData>& find_or_create_blueprint_buffer_data(bpid_t id, uint32_t vertexBufferCount);
     void create_buffer(std::shared_ptr<vk::Buffer>& existingBuffer, VkDeviceSize size, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
     void create_vertex_buffer(std::shared_ptr<vk::Buffer>& existingBuffer, VkDeviceSize size, VmaMemoryUsage memoryUsage);
     void create_index_buffer(std::shared_ptr<vk::Buffer>& existingBuffer, VkDeviceSize size, VmaMemoryUsage memoryUsage);
+
+    void invalidate_vertex_buffers(std::vector<BufferData>& bufferDatas);
+    void invalidate_index_buffers(std::vector<BufferData>& bufferDatas);
 
     void direct_map_buffer(vk::Buffer& buffer, const void* data, size_t size);
 private:

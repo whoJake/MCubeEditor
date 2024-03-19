@@ -8,12 +8,6 @@
 class Camera
 {
 public:
-    struct MatrixData
-    {
-        glm::mat4 projection;
-        glm::mat4 view;
-    };
-
     virtual ~Camera() { };
 
     void rotate(const glm::vec3& eulerRotation);
@@ -27,20 +21,14 @@ public:
 
     glm::quat get_rotation() const;
 
-    glm::mat4 get_projection_matrix();
+    virtual glm::mat4 as_projection_matrix() const = 0;
 
-    glm::mat4 get_view_matrix();
-
-    const MatrixData& get_matrix_data();
+    glm::mat4 as_view_matrix() const;
 protected:
-    Camera(glm::mat4 projectionMatrix);
+    Camera();
 protected:
     glm::vec3 m_position;
     glm::quat m_rotation;
-
-    MatrixData m_matrices;
-
-    bool m_dirty;
 };
 
 class PerspectiveCamera : public Camera
@@ -48,6 +36,8 @@ class PerspectiveCamera : public Camera
 public:
     PerspectiveCamera(float fov, float aspect, float nearZ, float farZ);
     ~PerspectiveCamera() { };
+
+    glm::mat4 as_projection_matrix() const override;
 
     void set_fov(float fov);
 

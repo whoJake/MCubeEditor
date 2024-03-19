@@ -65,7 +65,7 @@ public:
 
     void bind_vertex_buffers(Buffer& buffer, uint32_t binding);
 
-    void bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding, uint32_t bindingCount);
+    void bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding);
 
     void bind_index_buffer(Buffer& buffer, VkIndexType indexType = VK_INDEX_TYPE_UINT32);
 

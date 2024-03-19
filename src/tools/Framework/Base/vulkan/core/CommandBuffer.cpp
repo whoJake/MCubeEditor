@@ -121,7 +121,7 @@ void CommandBuffer::push_constants(PipelineLayout& layout, VkShaderStageFlags st
 
 void CommandBuffer::bind_vertex_buffers(Buffer& buffer, uint32_t binding)
 {
-    bind_vertex_buffers({ &buffer }, binding, 1);
+    bind_vertex_buffers({ &buffer }, binding);
 }
 
 void CommandBuffer::bind_index_buffer(Buffer& buffer, VkIndexType indexType)
@@ -129,7 +129,7 @@ void CommandBuffer::bind_index_buffer(Buffer& buffer, VkIndexType indexType)
     vkCmdBindIndexBuffer(get_handle(), buffer.get_handle(), 0, indexType);
 }
 
-void CommandBuffer::bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding, uint32_t bindingCount)
+void CommandBuffer::bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding)
 {
     std::vector<VkBuffer> handles{ };
     std::vector<VkDeviceSize> offsets{ };
@@ -139,7 +139,7 @@ void CommandBuffer::bind_vertex_buffers(const std::vector<Buffer*>& buffers, uin
         handles.push_back(buffer->get_handle());
     }
 
-    vkCmdBindVertexBuffers(get_handle(), firstBinding, bindingCount, handles.data(), offsets.data());
+    vkCmdBindVertexBuffers(get_handle(), firstBinding, static_cast<uint32_t>(buffers.size()), handles.data(), offsets.data());
 }
 
 void CommandBuffer::draw_indexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance)

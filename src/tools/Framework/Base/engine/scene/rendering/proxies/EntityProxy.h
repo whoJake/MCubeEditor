@@ -11,8 +11,15 @@ public:
     ~EntityProxy() = default;
 
     void sync();
+
+    glm::mat4 get_model_matrix() const;
+
+    entid_t get_id() const;
+
+    bpid_t get_bpid() const;
 private:
     Entity* m_entity;
     Transform m_transform;
-    uint32_t m_blueprintProxy;
+    bpid_t m_blueprintProxy;
+    entid_t m_id;
 };

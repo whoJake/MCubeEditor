@@ -1,34 +1,42 @@
 #pragma once
 
 #include "vulkan/rendering/RenderContext.h"
-#include "engine/scene/Scene.h"
+#include "proxies/BlueprintProxy.h"
+#include "proxies/EntityProxy.h"
 #include "engine/scene/gameplay/Camera.h"
+#include "SceneBufferManager.h"
 
+struct SceneProxies
+{
+    const std::unordered_map<bpid_t, BlueprintProxy>& blueprints;
+    const std::unordered_map<entid_t, EntityProxy>& entities;
+};
+
+struct DebugMaterial
+{
+    std::unique_ptr<vk::RenderPass> renderPass{ nullptr };
+    std::unique_ptr<vk::PipelineLayout> pipelineLayout{ nullptr };
+    std::unique_ptr<vk::Pipeline> pipeline{ nullptr };
+    vk::PipelineState pipelineState{ };
+};
 
 class Renderer
 {
 public:
-    Renderer() = delete;
     Renderer(vk::RenderContext& context);
-
     ~Renderer();
 
-    Renderer(Renderer&&) = delete;
-    Renderer(const Renderer&) = delete;
-    Renderer& operator=(Renderer&&) = delete;
-    Renderer& operator=(const Renderer&) = delete;
-
-    void render_scene(Scene& scene, Camera& camera);
+    void dispatch_render(SceneProxies scene, const std::vector<Camera*>& cameras, uint32_t* fence);
 private:
-    void create_debug_material();
+    void build_debug_material();
 private:
     vk::RenderContext& m_context;
+    DebugMaterial m_debugMaterial{ };
+    SceneBufferManager m_bufferManager;
 
-    struct
+    struct CameraMatrixData
     {
-        vk::RenderPass* renderPass{ nullptr };
-        vk::PipelineLayout* pipelineLayout{ nullptr };
-        vk::Pipeline* pipeline{ nullptr };
-        vk::PipelineState pipelineState{ };
-    }m_debugMaterial{ };
+        glm::mat4 projection;
+        glm::mat4 view;
+    };
 };

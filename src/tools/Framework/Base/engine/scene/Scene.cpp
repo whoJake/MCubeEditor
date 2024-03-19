@@ -60,6 +60,16 @@ Entity* Scene::get_entity(entid_t id)
     return nullptr;
 }
 
+const std::unordered_map<bpid_t, BlueprintProxy>& Scene::get_blueprint_proxies() const
+{
+    return m_blueprintProxies;
+}
+
+const std::unordered_map<bpid_t, EntityProxy>& Scene::get_entity_proxies() const
+{
+    return m_entityProxies;
+}
+
 void Scene::update_physics()
 { }
 

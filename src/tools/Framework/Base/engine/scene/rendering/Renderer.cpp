@@ -1,26 +1,27 @@
 #include "Renderer.h"
 
-#include "common/fileio.h"
+#include "vulkan/core/ShaderModule.h"
+#include "vulkan/core/RenderPass.h"
+#include "vulkan/core/PipelineLayout.h"
 #include "vulkan/core/Pipeline.h"
-#include "engine/scene/gameplay/Blueprint.h"
+
+#include "common/fileio.h"
 
 Renderer::Renderer(vk::RenderContext& context) :
-    m_context(context)
+    m_context(context),
+    m_bufferManager(context)
 {
-    create_debug_material();
+    build_debug_material();
 }
 
 Renderer::~Renderer()
-{
-    m_context.get_device().wait_idle();
+{ }
 
-    delete m_debugMaterial.pipeline;
-    delete m_debugMaterial.renderPass;
-    delete m_debugMaterial.pipelineLayout;
-}
-
-void Renderer::render_scene(Scene& scene, Camera& camera)
+void Renderer::dispatch_render(SceneProxies scene, const std::vector<Camera*>& cameras, uint32_t* fence)
 {
+    // Ensure fence is not 0
+    *fence = 100;
+
     vk::CommandBuffer& mainCmdBuffer = m_context.begin(vk::CommandBuffer::ResetMode::AlwaysAllocate);
     vk::RenderTarget& activeTarget = m_context.get_active_frame().get_render_target();
 
@@ -41,7 +42,6 @@ void Renderer::render_scene(Scene& scene, Camera& camera)
     mainCmdBuffer.begin_render_pass(&activeTarget, *m_debugMaterial.renderPass, activeFramebuffer, clearColours);
     mainCmdBuffer.bind_pipeline(*m_debugMaterial.pipeline);
 
-    
     VkViewport viewport{ };
     viewport.y = static_cast<float>(activeTarget.get_extent().height);
     viewport.width = static_cast<float>(activeTarget.get_extent().width);
@@ -55,49 +55,67 @@ void Renderer::render_scene(Scene& scene, Camera& camera)
     scissor.extent = activeTarget.get_extent();
     mainCmdBuffer.set_scissor(scissor);
 
+    CameraMatrixData cameraMatrix
+    {
+        cameras.at(0)->as_projection_matrix(),
+        cameras.at(0)->as_view_matrix()
+    };
+
     // Set camera
     mainCmdBuffer.push_constants(
         *m_debugMaterial.pipelineLayout,
         VK_SHADER_STAGE_VERTEX_BIT,
         0,
-        sizeof(Camera::MatrixData),
-        &camera.get_matrix_data());
+        sizeof(CameraMatrixData),
+        &cameraMatrix);
 
 
-    for( const auto& entitymap : scene.get_scene_entities() )
+    for( const auto& entitymap : scene.entities )
     {
-        const Entity* entity = &entitymap.second;
+        const EntityProxy& entity = entitymap.second;
 
-        glm::mat4 model = entity->transform().as_matrix();
+        auto blueprintIt = scene.blueprints.find(entity.get_bpid());
+        if( blueprintIt == scene.blueprints.end() )
+        {
+            // blueprint not loaded.
+            continue;
+        }
+
+        const BlueprintProxy& blueprint = blueprintIt->second;
+
+        glm::mat4 modelMatrix = entity.get_model_matrix();
 
         // Set model
         mainCmdBuffer.push_constants(
             *m_debugMaterial.pipelineLayout,
             VK_SHADER_STAGE_VERTEX_BIT,
-            sizeof(Camera::MatrixData),
+            sizeof(CameraMatrixData),
             sizeof(glm::mat4),
-            &model);
+            &modelMatrix);
 
-        Blueprint& blueprint = *scene.get_blueprint(entity->get_bpid());
-        mainCmdBuffer.bind_vertex_buffers(blueprint.mesh_renderer().get_vertex_buffer(m_context), 0);
-        mainCmdBuffer.bind_index_buffer(blueprint.mesh_renderer().get_index_buffer(m_context), VK_INDEX_TYPE_UINT16);
+        BlueprintBuffers& buffers = m_bufferManager.get_mesh_buffer_data(blueprint);
 
-        blueprint.mesh().set_index_dirty(false);
-        for( uint32_t i = 0; i < blueprint.mesh().get_vertex_buffer_count(); i++ )
+        std::vector<vk::Buffer*> vertexBuffers;
+        for( std::shared_ptr<vk::Buffer>& vertex : buffers.vertex )
         {
-            blueprint.mesh().set_vertex_dirty(i, false);
+            vertexBuffers.push_back(vertex.get());
         }
 
-        mainCmdBuffer.draw_indexed(vk::to_u32(blueprint.mesh().get_index_count()));
+        mainCmdBuffer.bind_vertex_buffers(vertexBuffers, 0);
+        mainCmdBuffer.bind_index_buffer(*buffers.index, VK_INDEX_TYPE_UINT16);
+
+        mainCmdBuffer.draw_indexed(vk::to_u32(blueprint.get_mesh().get_index_count()));
     }
 
     mainCmdBuffer.end_render_pass();
     mainCmdBuffer.end();
 
     m_context.submit_and_end(mainCmdBuffer);
+
+    *fence = 0;
 }
 
-void Renderer::create_debug_material()
+void Renderer::build_debug_material()
 {
     std::vector<vk::Attachment> attachments({
         { VK_FORMAT_R8G8B8A8_UNORM,  VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT },
@@ -116,7 +134,7 @@ void Renderer::create_debug_material()
         VK_RESOLVE_MODE_NONE,
         "Subpass" } });
 
-    m_debugMaterial.renderPass = new vk::RenderPass(m_context.get_device(), attachments, infos, subpassInfos);
+    m_debugMaterial.renderPass = std::make_unique<vk::RenderPass>(vk::RenderPass(m_context.get_device(), attachments, infos, subpassInfos));
 
     std::string vertPath = "shaders/basic.vert";
     std::vector<char> vertSource = FileIO::try_read_file(vertPath).value();
@@ -133,7 +151,7 @@ void Renderer::create_debug_material()
 
     std::vector<vk::ShaderModule*> modules({ &vertModule, &fragModule });
 
-    m_debugMaterial.pipelineLayout = new vk::PipelineLayout(m_context.get_device(), modules);
+    m_debugMaterial.pipelineLayout = std::make_unique<vk::PipelineLayout>(vk::PipelineLayout(m_context.get_device(), modules));
     m_debugMaterial.pipelineState.set_pipeline_layout(*m_debugMaterial.pipelineLayout);
     m_debugMaterial.pipelineState.set_render_pass(*m_debugMaterial.renderPass);
 
@@ -159,11 +177,15 @@ void Renderer::create_debug_material()
     inputStage.attributes.push_back(attributeDescription);
     inputStage.attributes.push_back(attributeDescription2);
 
+    vk::RasterizationState rast{ };
+    rast.polygonMode = VK_POLYGON_MODE_LINE;
+
     m_debugMaterial.pipelineState.set_vertex_input_state(inputStage);
+    m_debugMaterial.pipelineState.set_rasterization_state(rast);
 
     vk::ColorBlendState colorstate;
     colorstate.attachments.push_back(vk::ColorBlendAttachmentState());
     m_debugMaterial.pipelineState.set_color_blend_state(colorstate);
 
-    m_debugMaterial.pipeline = new vk::GraphicsPipeline(m_context.get_device(), VK_NULL_HANDLE, m_debugMaterial.pipelineState);
+    m_debugMaterial.pipeline = std::make_unique<vk::Pipeline>(vk::GraphicsPipeline(m_context.get_device(), VK_NULL_HANDLE, m_debugMaterial.pipelineState));
 }
