@@ -127,7 +127,7 @@ project (prjBase)
             "CFG_RELEASE",
             "CFG_DEPLOY"
         }
-        targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
+        -- targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
         optimize "On"
       
 project (prjMCubeEditor)
