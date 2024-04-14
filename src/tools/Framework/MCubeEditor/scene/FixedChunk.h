@@ -1,8 +1,6 @@
 #pragma once
 
-#include "common/stdincludes.h"
-#include "glm.hpp"
-#include "vulkan/core/Buffer.h"
+#include "core/Buffer.h"
 
 namespace vk
 {

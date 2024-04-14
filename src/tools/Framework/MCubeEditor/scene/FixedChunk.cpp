@@ -1,5 +1,5 @@
 #include "FixedChunk.h"
-#include "vulkan/core/Device.h"
+#include "core/Device.h"
 
 FixedChunk::FixedChunk(vk::Device& device, const glm::vec3 origin, const glm::uvec3 dimensions) :
     m_dimensions(dimensions),

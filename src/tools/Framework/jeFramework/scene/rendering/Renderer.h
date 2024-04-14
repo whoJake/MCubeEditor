@@ -1,0 +1,42 @@
+#pragma once
+
+#include "rendering/RenderContext.h"
+#include "proxies/BlueprintProxy.h"
+#include "proxies/EntityProxy.h"
+#include "scene/gameplay/Camera.h"
+#include "SceneBufferManager.h"
+
+struct SceneProxies
+{
+    const std::unordered_map<bpid_t, BlueprintProxy>& blueprints;
+    const std::unordered_map<entid_t, EntityProxy>& entities;
+};
+
+struct DebugMaterial
+{
+    std::unique_ptr<vk::RenderPass> renderPass{ nullptr };
+    std::unique_ptr<vk::PipelineLayout> pipelineLayout{ nullptr };
+    std::unique_ptr<vk::Pipeline> pipeline{ nullptr };
+    vk::PipelineState pipelineState{ };
+};
+
+class Renderer
+{
+public:
+    Renderer(vk::RenderContext& context);
+    ~Renderer();
+
+    void dispatch_render(SceneProxies scene, const std::vector<Camera*>& cameras, uint32_t* fence);
+private:
+    void build_debug_material();
+private:
+    vk::RenderContext& m_context;
+    DebugMaterial m_debugMaterial{ };
+    SceneBufferManager m_bufferManager;
+
+    struct CameraMatrixData
+    {
+        glm::mat4 projection;
+        glm::mat4 view;
+    };
+};

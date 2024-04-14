@@ -22,7 +22,9 @@ int main()
 
     if(strcmp(version.c_str(), "VisualStudio2022") == 0)
     {
-        return builder.build(SolutionVersion::VisualStudio2022);
+        int retval = builder.build(SolutionVersion::VisualStudio2022);
+        std::cin.ignore();
+        return retval;
     }
 
     std::cout << "Arguments were incorrect.";

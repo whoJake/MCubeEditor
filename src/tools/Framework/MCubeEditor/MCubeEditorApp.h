@@ -1,11 +1,11 @@
 #pragma once
 
-#include "applications/WindowedApplication.h"
+#include "application/WindowedApplication.h"
 #include "platform/events/WindowEvent.h"
 
-#include "engine/scene/gameplay/Camera.h"
-#include "engine/scene/Scene.h"
-#include "engine/scene/rendering/Renderer.h"
+#include "scene/gameplay/Camera.h"
+#include "scene/Scene.h"
+#include "scene/rendering/Renderer.h"
 // #include "scene/Scene.h"
 
 class MCubeEditorApp : public WindowedApplication

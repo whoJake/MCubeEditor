@@ -1,30 +1,19 @@
 #include "MCubeEditorApp.h"
 
-#include "common/stdincludes.h"
-#include "glm.hpp"
-#include "gtc/matrix_transform.hpp"
-#include "engine/input/Input.h"
+#include "data/spatial.h"
+#include "input/Input.h"
 #include "platform/events/Event.h"
 
-#include "vulkan/rendering/RenderContext.h"
-#include "engine/scene/gameplay/Blueprint.h"
-#include "engine/scene/gameplay/Primitives.h"
-#include "engine/scene/gameplay/Entity.h"
+#include "rendering/RenderContext.h"
+#include "scene/gameplay/Blueprint.h"
+#include "scene/gameplay/Primitives.h"
+#include "scene/gameplay/Entity.h"
 
-#define OPTION_OPENFILE "file"
+PARAM(open_scene);
 
 MCubeEditorApp::MCubeEditorApp() :
     WindowedApplication()
-{
-    Option openFile
-    {
-        OPTION_OPENFILE,
-        1,
-        OptionFlagBits::ARGUMENT_OPTIONAL | OptionFlagBits::OPTIONS_REQUIRED
-    };
-
-    get_config().get_arg_provider().register_option(openFile);
-}
+{ }
 
 MCubeEditorApp::~MCubeEditorApp()
 {
@@ -39,7 +28,7 @@ void MCubeEditorApp::on_app_startup()
     m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 100.f);
     m_camera->translate({ 2.f, 2.f, 2.f });
 
-    if( get_config().get_arg_provider().has_argument(OPTION_OPENFILE) )
+    if( Param_open_scene.get() )
     {
         // Open scene from file
     }

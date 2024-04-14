@@ -1,4 +1,4 @@
-workspace "Framework"
+workspace "CoreLibs"
     architecture "x64"
 
     configurations
@@ -9,63 +9,143 @@ workspace "Framework"
     }
 
 -- Project names
-prjBase = "Base"
-prjMetadataParserGenerator = "MetadataParserGenerator"
-prjFontAtlus = "FontAtlas"
+prj_Core = "jeCore"
+prj_Framework = "jeFramework"
+prj_Graphics = "jeGraphics"
 
-prjMCubeEditor = "MCubeEditor"
+prj_MCubeEditor = "MCubeEditor"
+prj_FontAtlas = "FontAtlas"
+prj_MetadataParserGenerator = "MetadataParserGenerator"
+prj_UnitTests = "UnitTests"
 
-prjFrameworkUnitTests = "FrameworkUnitTests"
+prj_Test = "Test"
 
-vendordir = "../../3rdparty/"
-outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/"
 
-project (prjBase)
-    location "%{prj.name}"
-    kind     "StaticLib"
-    language "C++"
+g_Vendordir = "../../3rdparty/"
+g_Outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}/"
 
-    targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
-    objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. outputdir)
+-------------------------
+-----GLOBAL-INCLUDES-----
+-------------------------
 
-    files
+language "C++"
+
+includedirs
+{
+    "%{prj.name}",
+    
+    "%{g_Vendordir}/pugixml-1.14/src", --used by core
+    "%{g_Vendordir}/glm-1.0.0/glm", --used by core
+}
+
+files
+{
+    "%{prj.name}/**.h",
+    "%{prj.name}/**.cpp",
+    "%{prj.name}/**.hpp",
+
+    "pm5.lua",
+}
+
+exceptionhandling ("Off")
+buildoptions
+{
+    "/FIforceinclude.h",
+}
+
+targetdir (".../bin/%{wks.name}/%{prj.name}/" .. g_Outputdir)
+objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. g_Outputdir)
+flags
+{
+    "MultiProcessorCompile",
+}
+
+filter "system:windows"
+    cppdialect "C++20"
+    staticruntime "off"
+    systemversion "latest"
+
+    defines
     {
-        "%{prj.name}/**.h",
-        "%{prj.name}/**.cpp",
-        "%{prj.name}/**.hpp",
-
-        "pm5.lua"
+        "PLATFORM_WINDOWS",
     }
+
+filter "configurations:Debug"
+    defines
+    {
+        "CFG_DEBUG",
+    }
+    symbols "On"
+    optimize "Off"
+    runtime "Release"
+    buildoptions "/MD"
+
+filter "configurations:Release"
+    defines
+    {
+        "CFG_RELEASE",
+    }
+    symbols "Off"
+    optimize "On"
+    runtime "Release"
+    buildoptions "/MD"
+
+filter "configurations:Deploy"
+    defines
+    {
+        "CFG_RELEASE",
+        "CFG_DEPLOY",
+    }
+    symbols "Off"
+    targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
+    optimize "On"
+    runtime "Release"
+    buildoptions "/MD"
+
+filter {}
+
+----------------------------------------------------------------------
+---------------------------------CORE---------------------------------
+----------------------------------------------------------------------
+
+project (prj_Core)
+    location "%{prj.name}"
+    kind "StaticLib"
+
+    --pchheader "forceinclude.h"
+    --pchsource "forceinclude.cpp"
+
+----------------------------------------------------------------------
+-------------------------------GRAPHICS-------------------------------
+----------------------------------------------------------------------
+
+project (prj_Graphics)
+    location "%{prj.name}"
+    kind "StaticLib"
 
     includedirs
     {
-        "%{prj.name}",
-        "%{prjConfiguration}",
+        "%{prj_Core}",
 
         -- glfw
-        "%{vendordir}/glfw",
-
-        -- glm
-        "%{vendordir}/glm-1.0.0/glm",
-
-        -- pugixml
-        "%{vendordir}/pugixml-1.14/src",
+        "%{g_Vendordir}/glfw",
 
         -- vulkan
         "%VULKAN_SDK%/Include",
-        "%{vendordir}/vma3.0.1/include",
-        "%{vendordir}/glslang/StandAlone",
-        "%{vendordir}/glslang/Include",
-        "%{vendordir}/glslang/SPIRV",
+        "%{g_Vendordir}/vma3.0.1/include",
+        "%{g_Vendordir}/glslang/StandAlone",
+        "%{g_Vendordir}/glslang/Include",
+        "%{g_Vendordir}/glslang/SPIRV",
     }
 
     dependson
     {
+        "%{prj_Core}"
     }
 
     libdirs
     {
-        "%{vendordir}/glfw/lib-vc2022",
+        "%{g_Vendordir}/glfw/lib-vc2022",
         "%VULKAN_SDK%/Lib",
     }
 
@@ -91,270 +171,146 @@ project (prjBase)
         "GenericCodeGen",
         "MachineIndependent",
         "glslang-default-resource-limits",
+
+        "%{prj_Core}",
     }
 
     filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "off"
-        runtime "Release"
-        buildoptions "/MD"
-        systemversion "latest"
-
         defines
         {
-            "PLATFORM_WINDOWS"
         }
 
     filter "configurations:Debug"
         defines
         {
-            "CFG_DEBUG",
             "USE_VK_VALIDATION_LAYERS",
         }
-        symbols "On"
 
     filter "configurations:Release"
         defines
         {
-            "CFG_RELEASE",
-            "USE_VK_VALIDATION_LAYERS",
         }
-        optimize "On"
 
     filter "configurations:Deploy"
         defines
         {
-            "CFG_RELEASE",
-            "CFG_DEPLOY"
         }
-        -- targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
-        optimize "On"
-      
-project (prjMCubeEditor)
+
+----------------------------------------------------------------------
+-------------------------------FRAMEWORK------------------------------
+----------------------------------------------------------------------
+
+project (prj_Framework)
     location "%{prj.name}"
-    kind     "ConsoleApp"
-    language "C++"
-
-    targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
-    objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. outputdir)
-
-    files
-    {
-        "%{prj.name}/**.h",
-        "%{prj.name}/**.cpp",
-        "%{prj.name}/**.hpp",
-
-        "pm5.lua"
-    }
+    kind "StaticLib"
 
     includedirs
     {
-        "%{prj.name}",
-        "%{prjBase}",
+        "%{prj_Core}",
+        "%{prj_Graphics}",
 
+        -- from prj_Graphics
         -- glfw
-        "%{vendordir}/glfw",
-
-        -- pugixml
-        "%{vendordir}/pugixml-1.14/src",
+        "%{g_Vendordir}/glfw",
 
         -- vulkan
         "%VULKAN_SDK%/Include",
-        "%{vendordir}/vma3.0.1/include",
-        "%{vendordir}/glslang/StandAlone",
-        "%{vendordir}/glslang/Include",
-        "%{vendordir}/glslang/SPIRV",
-        "%{vendordir}/glm-1.0.0/glm",
+        "%{g_Vendordir}/vma3.0.1/include",
+        "%{g_Vendordir}/glslang/StandAlone",
+        "%{g_Vendordir}/glslang/Include",
+        "%{g_Vendordir}/glslang/SPIRV",
     }
 
     dependson
     {
-        "%{prjBase}",
+        "%{prj_Core}",
+        "%{prj_Graphics}",
+    }
+
+    libdirs
+    {
     }
 
     links
     {
-        "%{prjBase}",
+        "%{prj_Core}",
+        "%{prj_Graphics}",
     }
-
-    filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "off"
-        runtime "Release"
-        buildoptions "/MD"
-        systemversion "latest"
-
-        defines
-        {
-            "PLATFORM_WINDOWS"
-        }
 
     filter "configurations:Debug"
         defines
         {
-            "CFG_DEBUG"
+            "USE_VK_VALIDATION_LAYERS",
         }
-        symbols "On"
 
     filter "configurations:Release"
         defines
         {
-            "CFG_RELEASE"
         }
-        optimize "On"
 
     filter "configurations:Deploy"
         defines
         {
-            "CFG_RELEASE",
-            "CFG_DEPLOY"
         }
-        targetdir ("../../../tools/%{cfg.system}-%{cfg.architecture}/%{wks.name}/%{prj.name}")
-        optimize "On"
 
-         
-project (prjMetadataParserGenerator)
+----------------------------------------------------------------------
+------------------------------MCUBEEDITOR-----------------------------
+----------------------------------------------------------------------
+
+project (prj_MCubeEditor)
     location "%{prj.name}"
-    kind     "StaticLib"
-    language "C++"
-
-    targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
-    objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. outputdir)
-
-    files
-    {
-        "%{prj.name}/**.h",
-        "%{prj.name}/**.cpp",
-        "%{prj.name}/**.hpp",
-
-        "pm5.lua"
-    }
+    kind "ConsoleApp"
 
     includedirs
     {
-        "%{prj.name}",
-        -- pugixml
-        "%{vendordir}/pugixml-1.14/src",
+        "%{prj_Core}",
+        "%{prj_Graphics}",
+
+        "%{prj_Framework}",
+
+        -- from prj_Graphics
+        -- glfw
+        "%{g_Vendordir}/glfw",
+
+        -- vulkan
+        "%VULKAN_SDK%/Include",
+        "%{g_Vendordir}/vma3.0.1/include",
+        "%{g_Vendordir}/glslang/StandAlone",
+        "%{g_Vendordir}/glslang/Include",
+        "%{g_Vendordir}/glslang/SPIRV",
     }
 
-    filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "off"
-        runtime "Release"
-        buildoptions "/MD"
-        systemversion "latest"
+    dependson
+    {
+        "%{prj_Core}",
+        "%{prj_Graphics}",
 
-        defines
-        {
-            "PLATFORM_WINDOWS"
-        }
+        "%{prj_Framework}",
+    }
+
+    libdirs
+    {
+    }
+
+    links
+    {
+        "%{prj_Core}",
+        "%{prj_Graphics}",
+        "%{prj_Framework}",
+    }
 
     filter "configurations:Debug"
         defines
         {
-            "CFG_DEBUG"
+            "USE_VK_VALIDATION_LAYERS",
         }
-        symbols "On"
 
     filter "configurations:Release"
         defines
         {
-            "CFG_RELEASE"
         }
-        optimize "On"
-        
-project (prjFontAtlus)
-    location "%{prj.name}"
-    kind     "StaticLib"
-    language "C++"
 
-    targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
-    objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. outputdir)
-
-    files
-    {
-        "%{prj.name}/**.h",
-        "%{prj.name}/**.cpp",
-        "%{prj.name}/**.hpp",
-
-        "pm5.lua"
-    }
-
-    includedirs
-    {
-        "%{prj.name}",
-    }
-
-    filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "off"
-        runtime "Release"
-        buildoptions "/MD"
-        systemversion "latest"
-
+    filter "configurations:Deploy"
         defines
         {
-            "PLATFORM_WINDOWS"
         }
-
-    filter "configurations:Debug"
-        defines
-        {
-            "CFG_DEBUG"
-        }
-        symbols "On"
-
-    filter "configurations:Release"
-        defines
-        {
-            "CFG_RELEASE"
-        }
-        optimize "On"
-
-project (prjFrameworkUnitTests)
-    location "%{prj.name}"
-    kind     "ConsoleApp"
-    language "C++"
-
-    targetdir (".../bin/%{wks.name}/%{prj.name}/" .. outputdir)
-    objdir    (".../bin-int/%{wks.name}/%{prj.name}/" .. outputdir)
-
-    files
-    {
-        "%{prj.name}/**.h",
-        "%{prj.name}/**.cpp",
-        "%{prj.name}/**.hpp",
-
-        "pm5.lua"
-    }
-
-    includedirs
-    {
-        "%{prj.name}",
-    }
-
-    filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "off"
-        runtime "Release"
-        buildoptions "/MD"
-        systemversion "latest"
-
-        defines
-        {
-            "PLATFORM_WINDOWS"
-        }
-
-    filter "configurations:Debug"
-        defines
-        {
-            "CFG_DEBUG"
-        }
-        symbols "On"
-
-    filter "configurations:Release"
-        defines
-        {
-            "CFG_RELEASE"
-        }
-        optimize "On"
