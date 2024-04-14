@@ -32,7 +32,7 @@ bool Input::get_mouse_button_pressed(uint8_t button)
 {
     if( button >= INPUT_MAX_MOUSE_BUTTONS )
     {
-        throw std::exception("Polling for mouse button that is past the max supported mouse buttons.");
+        QUITFMT("Polling for mouse button that is past the max supported mouse buttons.");
     }
 
     return get_mouse_key_state(button) == KeyState::PRESSED;
@@ -42,7 +42,7 @@ bool Input::get_mouse_button_down(uint8_t button)
 {
     if( button >= INPUT_MAX_MOUSE_BUTTONS )
     {
-        throw std::exception("Polling for mouse button that is past the max supported mouse buttons.");
+        QUITFMT("Polling for mouse button that is past the max supported mouse buttons.");
     }
 
     return get_mouse_key_state(button) >= KeyState::PRESSED;
@@ -52,7 +52,7 @@ bool Input::get_mouse_button_released(uint8_t button)
 {
     if( button >= INPUT_MAX_MOUSE_BUTTONS )
     {
-        throw std::exception("Polling for mouse button that is past the max supported mouse buttons.");
+        QUITFMT("Polling for mouse button that is past the max supported mouse buttons.");
     }
 
     return get_mouse_key_state(button) == KeyState::RELEASED;
@@ -154,7 +154,7 @@ bool Input::register_mouse_press_event(MousePressedEvent& event)
 {
     if( event.get_button() >= INPUT_MAX_MOUSE_BUTTONS )
     {
-        throw std::exception("Trying to register mouse button that is past the max supported mouse buttons.");
+        QUITFMT("Trying to register mouse button that is past the max supported mouse buttons.");
     }
 
     KeyState& currentState = get_mouse_key_state(static_cast<uint8_t>(event.get_button()));
@@ -170,7 +170,7 @@ bool Input::register_mouse_release_event(MouseReleasedEvent& event)
 {
     if( event.get_button() >= INPUT_MAX_MOUSE_BUTTONS )
     {
-        throw std::exception("Trying to register mouse button that is past the max supported mouse buttons.");
+        QUITFMT("Trying to register mouse button that is past the max supported mouse buttons.");
     }
 
     get_mouse_key_state(static_cast<uint8_t>(event.get_button())) = KeyState::RELEASED;
