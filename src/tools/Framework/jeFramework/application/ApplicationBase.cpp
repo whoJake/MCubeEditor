@@ -1,4 +1,7 @@
 #include "ApplicationBase.h"
+#include "device/fiDevice.h"
+
+PARAM(args_file);
 
 ApplicationBase::ApplicationBase() :
     m_exitFlags(ExitFlagBits::Success)
@@ -19,10 +22,20 @@ int ApplicationBase::run(int argc, const char* argv[])
     Param::set_executable(argv[0]);
     Param::add_params(argc-1, &argv[1]);
 
-    std::vector<std::string> argList(argc);
-    for( int i = 0; i < argc; i++ )
+    if( Param_args_file.get() )
     {
-        argList[i] = std::string(argv[i]);
+        const char* filename = Param_args_file.value();
+        fiDevice device;
+        device.open(filename);
+        std::vector<uint8_t> buffer;
+        while( device.read_line(&buffer) )
+        {
+
+            char* persistentStr = new char[buffer.size()+1];
+            memcpy(persistentStr, buffer.data(), buffer.size());
+            persistentStr[buffer.size()] = '\0';
+            Param::add_params(1, (const char**)&persistentStr);
+        }
     }
 
     ExitFlags exitFlags;
