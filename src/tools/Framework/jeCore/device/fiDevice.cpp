@@ -48,6 +48,25 @@ std::vector<uint8_t> fiDevice::read_at(size_t size, size_t offset)
     return retval;
 }
 
+bool fiDevice::read_line(std::vector<uint8_t>* out, char delimiter, char maybe)
+{
+    if( !m_handle.is_open() || m_handle.eof() )
+    {
+        return false;
+    }
+
+    std::string str;
+    std::getline(m_handle, str, delimiter);
+    if( str.size() > 0 && str.at(str.size() - 1) == maybe )
+    {
+        // remove maybe (mostly for \r)
+        str = str.substr(0, str.size() - 1);
+    }
+    
+    *out = std::vector<uint8_t>(str.begin(), str.end());
+    return true;
+}
+
 size_t fiDevice::get_size() const
 {
     return m_size;
