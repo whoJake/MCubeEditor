@@ -2,14 +2,18 @@
 
 #include "scene/gameplay/Blueprint.h"
 #include "scene/gameplay/Entity.h"
-#include "scene/Scene.h"
+#include "SceneObject.h"
 
-#define DEFAULT_CHUNK_RESOLUTION 16
-
-class Chunk
+class Chunk : public SceneObject
 {
 public:
-    Chunk(Blueprint* blueprint, Entity* entity);
+    Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolution, float unitSize);
+    Chunk(Chunk&&) = delete;
+    Chunk(const Chunk&) = delete;
+    Chunk& operator=(Chunk&&) = delete;
+    Chunk& operator=(const Chunk&) = delete;
+
+    ~Chunk();
     
     Mesh& mesh();
 
@@ -24,14 +28,13 @@ public:
     void recalculate_mesh();
 private:
     size_t coords_to_index(int x,  int y, int z) const;
+    size_t get_resolution() const;
 private:
-    Blueprint* m_blueprint;
-    Entity* m_entity;
+    std::string m_name;
+    bpid_t m_blueprint{ 0 };
+    entid_t m_entity{ 0 };
 
     std::vector<float> m_points;
-
-    size_t m_resolution{ 0 };
-public:
-    static Chunk create_chunk(Scene* scene, const char* name);
-    static void destroy_chunk(Scene* scene, Chunk* chunk);
+    uint16_t m_resolution;
+    float m_unitSize;
 };

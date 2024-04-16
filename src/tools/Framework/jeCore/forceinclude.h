@@ -27,6 +27,7 @@
 #include "glm.hpp"
 #include "gtc/matrix_transform.hpp"
 #include "gtx/quaternion.hpp"
+#include "gtx/hash.hpp"
 
 
 #include "logging/jclog.h"

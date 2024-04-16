@@ -10,12 +10,12 @@ Buffer::Buffer(Device&            device,
                VkBufferUsageFlags usage,
                VmaMemoryUsage     memoryUsage) :
     Resource(VK_NULL_HANDLE, device),
-    m_size(size),
+    m_size(std::max(size, device.get_gpu().get_properties().limits.minStorageBufferOffsetAlignment)),
     m_usage(usage),
     m_allocation(nullptr)
 {
     VkBufferCreateInfo createInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-    createInfo.size = size;
+    createInfo.size = m_size;
     createInfo.usage = usage;
 
     VmaAllocationCreateInfo allocInfo{ };

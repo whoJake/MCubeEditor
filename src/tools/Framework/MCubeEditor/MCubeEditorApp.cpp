@@ -11,6 +11,15 @@
 
 PARAM(open_scene);
 
+#define DEFAULT_START_CHUNKS_PER_AXIS 3
+PARAM(start_chunks_per_axis);
+
+#define DEFAULT_CHUNK_RESOLUTION 16
+PARAM(chunk_resolution);
+
+#define DEFAULT_UNIT_SIZE 1
+PARAM(chunk_unit_size);
+
 MCubeEditorApp::MCubeEditorApp() :
     WindowedApplication()
 { }
@@ -25,7 +34,7 @@ void MCubeEditorApp::on_app_startup()
     initialize_scene();
     m_renderer = std::make_unique<Renderer>(get_render_context());
 
-    m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 100.f);
+    m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 2000.f);
     m_camera->translate({ 2.f, 2.f, 2.f });
 
     if( Param_open_scene.get() )
@@ -96,40 +105,6 @@ void MCubeEditorApp::update(double deltaTime)
 
     m_camera->translate(translation);
 
-    if( Input::get_key_pressed(KeyCode::Up) )
-    {
-        m_currentUpEntityScale++;
-        Entity entity(m_blueprint);
-        entity.transform().scale() *= glm::vec3(m_currentUpEntityScale, 1.f, m_currentUpEntityScale);
-        entity.transform().translate({ 0.f, m_currentUpEntityScale * 1.2f - 1.f, 0.f });
-
-        m_scene->request_create_entity(std::move(entity));
-    }
-
-    if( Input::get_key_pressed(KeyCode::Down) )
-    {
-        m_currentDownEntityScale++;
-        Entity entity(m_blueprint);
-        entity.transform().scale() *= glm::vec3(1.f / m_currentDownEntityScale, 1.f, 1.f / m_currentDownEntityScale);
-        entity.transform().translate({ 0.f, -m_currentDownEntityScale * 1.2f + 1.f, 0.f });
-
-        m_scene->request_create_entity(std::move(entity));
-    }
-
-    Blueprint& blueprint = *m_scene->get_blueprint(m_blueprint);
-
-    if( Input::get_key_pressed(KeyCode::Left) )
-    {
-        blueprint.mesh().set_vertices(s_verticesUnitPlane, 0);
-        blueprint.mesh().set_indices(s_indicesUnitPlane);
-    }
-
-    if( Input::get_key_pressed(KeyCode::Right) )
-    {
-        blueprint.mesh().set_vertices(s_verticesUnitCube, 0);
-        blueprint.mesh().set_indices(s_indicesUnitCube);
-    }
-
     uint32_t renderFinished;
     m_renderer->dispatch_render({ m_scene->get_blueprint_proxies(), m_scene->get_entity_proxies() }, { m_camera.get() }, &renderFinished);
 
@@ -159,18 +134,54 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
 void MCubeEditorApp::initialize_scene()
 {
     m_scene = std::make_unique<Scene>("TEST_SCENE");
-    
-    Blueprint blueprint("TEST_CUBE");
-    blueprint.mesh().set_vertices(s_verticesUnitCube, 0);
-    blueprint.mesh().set_indices(s_indicesUnitCube);
 
-    m_blueprint = blueprint.get_id();
+    int beginChunksPerAxis{ 0 };
+    if( !Param_start_chunks_per_axis.get_int(&beginChunksPerAxis) )
+    {
+        beginChunksPerAxis = DEFAULT_START_CHUNKS_PER_AXIS;
+    }
+    beginChunksPerAxis = std::max(beginChunksPerAxis, 1);
 
-    Entity entity(m_blueprint);
+    for( int x = 0; x < beginChunksPerAxis; x++ )
+    {
+        for( int y = 0; y < beginChunksPerAxis; y++ )
+        {
+            for( int z = 0; z < beginChunksPerAxis; z++ )
+            {
+                // idc about trying to centre around 0,0,0 lol
+                glm::ivec3 chunkIndex{ x, y, z };
+                create_chunk(chunkIndex);
+            }
+        }
+    }
+}
 
-    m_scene->request_create_blueprint(std::move(blueprint));
-    m_scene->request_create_entity(std::move(entity));
-    m_scene->resolve_creation_queue();
+void MCubeEditorApp::create_chunk(glm::ivec3 index)
+{
+    if( m_chunks.find(index) != m_chunks.end() )
+    {
+        return;
+    }
+
+    int chunkResolution{ 0 };
+    if( !Param_chunk_resolution.get_int(&chunkResolution) )
+    {
+        chunkResolution = DEFAULT_CHUNK_RESOLUTION;
+    }
+    chunkResolution = std::max(chunkResolution, 2);
+
+    float unitSize{ 0 };
+    if( !Param_chunk_resolution.get_float(&unitSize) )
+    {
+        unitSize = DEFAULT_UNIT_SIZE;
+    }
+    unitSize = std::max(unitSize, 0.01f);
+
+    float chunkSize = chunkResolution * unitSize;
+    glm::vec3 centre{ index.x * chunkSize, index.y * chunkSize, index.z * chunkSize };
+
+    m_chunks.insert(std::pair(index,
+        std::make_unique<Chunk>(m_scene.get(), std::format("chunk:{}-{}-{}", index.x, index.y, index.z), centre, chunkResolution, unitSize)));
 }
 
 std::vector<VkPresentModeKHR> MCubeEditorApp::request_swapchain_present_mode() const
