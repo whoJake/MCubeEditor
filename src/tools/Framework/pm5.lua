@@ -51,6 +51,7 @@ exceptionhandling ("Off")
 buildoptions
 {
     "/FIforceinclude.h",
+    "/Zc:__cplusplus",
 }
 
 targetdir (".../bin/%{wks.name}/%{prj.name}/" .. g_Outputdir)
