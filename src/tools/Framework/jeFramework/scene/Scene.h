@@ -23,10 +23,10 @@ public:
 
     const std::unordered_map<entid_t, Entity>& get_scene_entities();
 
-    void request_create_entity(Entity&& entity);
+    Entity* request_create_entity(Entity&& entity);
     void request_destroy_entity(entid_t entity);
 
-    void request_create_blueprint(Blueprint&& blueprint);
+    Blueprint* request_create_blueprint(Blueprint&& blueprint);
     void request_destroy_blueprint(bpid_t blueprint);
 
     Blueprint* get_blueprint(bpid_t id);

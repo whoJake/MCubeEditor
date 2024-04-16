@@ -14,10 +14,11 @@ const std::unordered_map<entid_t, Entity>& Scene::get_scene_entities()
     return m_entities;
 }
 
-void Scene::request_create_entity(Entity&& entity)
+Entity* Scene::request_create_entity(Entity&& entity)
 {
     std::lock_guard<std::mutex> lock(m_entityCreationMutex);
     m_entityCreationQueue.push(std::move(entity));
+    return &m_entityCreationQueue.back();
 }
 
 void Scene::request_destroy_entity(entid_t entity)
@@ -26,10 +27,11 @@ void Scene::request_destroy_entity(entid_t entity)
     m_entityDestructionQueue.push(entity);
 }
 
-void Scene::request_create_blueprint(Blueprint&& blueprint)
+Blueprint* Scene::request_create_blueprint(Blueprint&& blueprint)
 {
     std::lock_guard<std::mutex> lock(m_blueprintCreationMutex);
     m_blueprintCreationQueue.push(std::move(blueprint));
+    return &m_blueprintCreationQueue.back();
 }
 
 void Scene::request_destroy_blueprint(bpid_t blueprint)
