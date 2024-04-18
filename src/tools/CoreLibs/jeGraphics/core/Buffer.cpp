@@ -24,6 +24,11 @@ Buffer::Buffer(Device&            device,
         : 0;
     allocInfo.usage = memoryUsage;
 
+    if( usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT )
+    {
+        JCLOG_TRACK(*g_singleThreadedLog, "Creating index buffer with ~{} triangles.", m_size / sizeof(uint16_t) / 3);
+    }
+
     VkResult result = vmaCreateBuffer(get_device().get_allocator(), &createInfo, &allocInfo, &m_handle, &m_allocation, nullptr);
     VK_CHECK(result, "Failed to create Buffer.");
 }

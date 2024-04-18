@@ -110,6 +110,17 @@ void MCubeEditorApp::update(double deltaTime)
 
     m_scene->resolve_creation_queue();
     m_scene->resolve_destruction_queue();
+
+    static bool frameOneHack = true;
+    if( frameOneHack )
+    {
+        for( auto& chunk : m_chunks )
+        {
+            chunk.second->recalculate_mesh();
+        }
+        frameOneHack = false;
+    }
+
     m_scene->sync_proxies();
 
     Input::tick();
