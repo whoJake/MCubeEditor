@@ -131,12 +131,12 @@ void CommandBuffer::bind_index_buffer(Buffer& buffer, VkIndexType indexType)
 
 void CommandBuffer::bind_vertex_buffers(const std::vector<Buffer*>& buffers, uint32_t firstBinding)
 {
-    std::vector<VkBuffer> handles{ };
-    std::vector<VkDeviceSize> offsets{ };
-    for( auto& buffer : buffers )
+    std::vector<VkBuffer> handles(buffers.size());
+    std::vector<VkDeviceSize> offsets(buffers.size());
+    for( size_t i = 0; i < buffers.size(); i++ )
     {
-        offsets.push_back(0);
-        handles.push_back(buffer->get_handle());
+        offsets.at(i) = 0;
+        handles.at(i) = buffers.at(i)->get_handle();
     }
 
     vkCmdBindVertexBuffers(get_handle(), firstBinding, static_cast<uint32_t>(buffers.size()), handles.data(), offsets.data());
