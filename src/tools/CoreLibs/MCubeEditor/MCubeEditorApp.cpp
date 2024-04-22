@@ -20,6 +20,8 @@ PARAM(chunk_resolution);
 #define DEFAULT_UNIT_SIZE 1
 PARAM(chunk_unit_size);
 
+bool firstFrameHack = true;
+
 MCubeEditorApp::MCubeEditorApp() :
     WindowedApplication()
 { }
@@ -32,6 +34,8 @@ MCubeEditorApp::~MCubeEditorApp()
 void MCubeEditorApp::on_app_startup()
 {
     initialize_scene();
+    JobDispatch::initialize();
+
     m_renderer = std::make_unique<Renderer>(get_render_context());
 
     m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 2000.f);
@@ -61,68 +65,31 @@ void MCubeEditorApp::update(double deltaTime)
     dt = dt * 0.95 + deltaTime * 0.05;
     get_window().set_title(std::format("fps: {}",  static_cast<uint32_t>(1.0 / dt)));
 
-    glm::vec3 movement{ };
-    if( Input::get_key_down(KeyCode::A) )
-        movement.x -= 1;
-    if( Input::get_key_down(KeyCode::D) )
-        movement.x += 1;
-    if( Input::get_key_down(KeyCode::S) )
-        movement.z += 1;
-    if( Input::get_key_down(KeyCode::W) )
-        movement.z -= 1;
-    if( Input::get_key_down(KeyCode::Space) )
-        movement.y += 1;
-    if( Input::get_key_down(KeyCode::LeftShift) )
-        movement.y -= 1;
+    parse_input(deltaTime);
 
-    float speed = 5.f;
-    movement *= speed * deltaTime;
+    std::function<void()> updateFunc = [&]{ update_scene(deltaTime); };
+    std::function<void()> renderFunc = [&]{ render_scene(); };
 
-    if( Input::get_mouse_button_pressed(1) )
-    {
-        Input::set_cursor_lock_state(get_window(), CursorLockState::LOCKED);
-    }
-    else if( Input::get_mouse_button_released(1) )
-    {
-        Input::set_cursor_lock_state(get_window(), CursorLockState::NONE);
-    }
+    std::atomic<uint32_t>* updateJob = JobDispatch::execute(updateFunc);
+    std::atomic<uint32_t>* renderJob = JobDispatch::execute(renderFunc);
 
-    glm::vec3 cameraForward = glm::vec3(0.f, 0.f, 1.f) * m_camera->get_rotation();
-    glm::vec3 cameraRight = glm::vec3(1.f, 0.f, 0.f) * m_camera->get_rotation();
-    
-    if( Input::get_mouse_button_down(1) )
-    {
-        float sensitivity = 70.f;
-
-        float mouseX = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_horizontal());
-        float mouseY = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_vertical());
-
-        m_camera->rotate(glm::angleAxis(glm::radians(mouseY), cameraRight));
-        m_camera->rotate(glm::angleAxis(glm::radians(mouseX), glm::vec3(0.f, 1.f, 0.f)));
-    }
-
-    glm::vec3 translation = cameraRight * movement.x + cameraForward * movement.z + glm::vec3(0.f, 1.f, 0.f) * movement.y;
-
-    m_camera->translate(translation);
-
-    uint32_t renderFinished;
-    m_renderer->dispatch_render({ m_scene->get_blueprint_proxies(), m_scene->get_entity_proxies() }, { m_camera.get() }, &renderFinished);
+    while( (*updateJob).load() != 0 || (*renderJob).load() != 0 )
+    { }
+    JobDispatch::reset_counters();
 
     m_scene->resolve_creation_queue();
     m_scene->resolve_destruction_queue();
 
-    static bool frameOneHack = true;
-    if( frameOneHack )
+    if( firstFrameHack )
     {
+        firstFrameHack = false;
         for( auto& chunk : m_chunks )
         {
             chunk.second->recalculate_mesh();
         }
-        frameOneHack = false;
     }
 
     m_scene->sync_proxies();
-
     Input::tick();
 }
 
@@ -152,6 +119,7 @@ void MCubeEditorApp::initialize_scene()
         beginChunksPerAxis = DEFAULT_START_CHUNKS_PER_AXIS;
     }
     beginChunksPerAxis = std::max(beginChunksPerAxis, 1);
+    m_chunksPerAxis = beginChunksPerAxis;
 
     for( int x = 0; x < beginChunksPerAxis; x++ )
     {
@@ -165,6 +133,91 @@ void MCubeEditorApp::initialize_scene()
             }
         }
     }
+}
+
+void MCubeEditorApp::parse_input(double deltaTime)
+{
+    glm::vec3 movement{ };
+    if( Input::get_key_down(KeyCode::A) )
+        movement.x -= 1;
+    if( Input::get_key_down(KeyCode::D) )
+        movement.x += 1;
+    if( Input::get_key_down(KeyCode::S) )
+        movement.z += 1;
+    if( Input::get_key_down(KeyCode::W) )
+        movement.z -= 1;
+    if( Input::get_key_down(KeyCode::Space) )
+        movement.y += 1;
+    if( Input::get_key_down(KeyCode::LeftShift) )
+        movement.y -= 1;
+
+    if( Input::get_key_down(KeyCode::Down) )
+    {
+        g_chunkMarchingCubeThreshold -= 0.2f * static_cast<float>(deltaTime);
+        g_chunkMarchingCubeThreshold = std::clamp(g_chunkMarchingCubeThreshold, 0.f, 1.f);
+    }
+    if( Input::get_key_down(KeyCode::Up) )
+    {
+        g_chunkMarchingCubeThreshold += 0.2f * static_cast<float>(deltaTime);
+        g_chunkMarchingCubeThreshold = std::clamp(g_chunkMarchingCubeThreshold, 0.f, 1.f);
+    }
+
+
+    float speed = 5.f;
+    movement *= speed * deltaTime;
+
+    if( Input::get_mouse_button_pressed(1) )
+    {
+        Input::set_cursor_lock_state(get_window(), CursorLockState::LOCKED);
+    }
+    else if( Input::get_mouse_button_released(1) )
+    {
+        Input::set_cursor_lock_state(get_window(), CursorLockState::NONE);
+    }
+
+    glm::vec3 cameraForward = glm::vec3(0.f, 0.f, 1.f) * m_camera->get_rotation();
+    glm::vec3 cameraRight = glm::vec3(1.f, 0.f, 0.f) * m_camera->get_rotation();
+
+    if( Input::get_mouse_button_down(1) )
+    {
+        float sensitivity = 70.f;
+
+        float mouseX = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_horizontal());
+        float mouseY = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_vertical());
+
+        m_camera->rotate(glm::angleAxis(glm::radians(mouseY), cameraRight));
+        m_camera->rotate(glm::angleAxis(glm::radians(mouseX), glm::vec3(0.f, 1.f, 0.f)));
+    }
+
+    glm::vec3 translation = cameraRight * movement.x + cameraForward * movement.z + glm::vec3(0.f, 1.f, 0.f) * movement.y;
+
+    m_camera->translate(translation);
+}
+
+void MCubeEditorApp::update_scene(double deltaTime)
+{
+    if( firstFrameHack )
+        return;
+
+    std::function<void(DispatchState)> updateChunksFunc = [&](DispatchState state){
+        JobDispatch::get_thread_log().trace("Updating scene with delta time of {}s", deltaTime);
+        glm::ivec3 args{ (state.jobIndex % m_chunksPerAxis), (state.jobIndex / (m_chunksPerAxis)) % m_chunksPerAxis, state.jobIndex / (m_chunksPerAxis * m_chunksPerAxis) };
+
+        if( args.x >= m_chunksPerAxis || args.y >= m_chunksPerAxis || args.z >= m_chunksPerAxis )
+            return;
+
+        m_chunks.at(args)->recalculate_mesh();
+    };
+
+    JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 5, updateChunksFunc);
+}
+
+void MCubeEditorApp::render_scene()
+{
+    JobDispatch::get_thread_log().trace("Rendering {} entities", m_scene->get_entity_proxies().size());
+
+    uint32_t renderFinished;
+    m_renderer->dispatch_render({ m_scene->get_blueprint_proxies(), m_scene->get_entity_proxies() }, { m_camera.get() }, &renderFinished);
 }
 
 void MCubeEditorApp::create_chunk(glm::ivec3 index)

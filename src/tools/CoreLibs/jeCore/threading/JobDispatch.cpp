@@ -40,6 +40,7 @@ void JobDispatch::initialize()
     {
         // data
         WorkerInfo& info = instance().m_workers.at(i);
+        info.name = std::format("logs\\THREAD_{}.txt", i);
 
         std::thread worker([&]{
                 std::function<void()> activeJob;
@@ -62,6 +63,14 @@ void JobDispatch::initialize()
         });
 
         info.id = worker.get_id();
+        auto pair = instance().m_threadLogs.emplace(
+            std::piecewise_construct,
+            std::tuple(info.id),
+            std::tuple());
+
+        std::remove(info.name.c_str());
+        pair.first->second.register_target(new jclog::FileTarget(info.name.c_str()));
+
         worker.detach();
     }
 }
@@ -93,6 +102,11 @@ void JobDispatch::reset_counters()
     instance().m_counters.clear();
 }
 
+jclog::Log& JobDispatch::get_thread_log(std::thread::id tid)
+{
+    return instance().m_threadLogs.at(tid);
+}
+
 JobDispatch& JobDispatch::instance()
 {
     return *m_instance;
@@ -102,7 +116,7 @@ std::atomic<uint32_t>* JobDispatch::execute(const std::function<void()>& job)
 {
     std::atomic<uint32_t>* retval = request_atomic_counter(1u);
 
-    std::function<void()> trackedJob = [&retval, &job]{
+    std::function<void()> trackedJob = [retval, &job]{
         job();
         (*retval)--;
     };

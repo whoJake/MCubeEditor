@@ -7,6 +7,7 @@
 #include "scene/Scene.h"
 #include "scene/rendering/Renderer.h"
 #include "scene/Chunk.h"
+#include "threading/JobDispatcher.h"
 // #include "scene/Scene.h"
 
 class MCubeEditorApp : public WindowedApplication
@@ -27,6 +28,11 @@ private:
     bool on_window_resize(WindowResizeEvent& e);
     void initialize_scene();
 
+    void parse_input(double deltaTime);
+
+    void update_scene(double deltaTime);
+    void render_scene();
+
     void create_chunk(glm::ivec3 index);
 private:
     std::unique_ptr<Renderer> m_renderer;
@@ -39,4 +45,5 @@ private:
 
     std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_chunks;
     glm::ivec3 m_currentChunkPos{ 0, 0, 0 };
+    int m_chunksPerAxis{ 0 };
 };

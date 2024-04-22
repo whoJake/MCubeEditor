@@ -2,6 +2,8 @@
 
 #include "MarchingCubeLookup.h"
 
+float g_chunkMarchingCubeThreshold = -1;
+
 #define DEFAULT_MARCHING_CUBE_THRESHOLD 0.5
 PARAM(marching_cube_threshold);
 
@@ -11,7 +13,6 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
     m_resolution(resolution),
     m_unitSize(unitSize)
 {
-
     m_points.resize(get_resolution() * get_resolution() * get_resolution());
 
     Blueprint bp(name);
@@ -37,6 +38,8 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
             }
         }
     }
+
+    m_colour = { (rand() % 255) / 255.f, (rand() % 255) / 255.f, (rand() % 255) / 255.f };
 }
 
 Chunk::~Chunk()
@@ -86,8 +89,12 @@ size_t Chunk::get_resolution() const
 
 void Chunk::recalculate_mesh()
 {
-    float threshold = DEFAULT_MARCHING_CUBE_THRESHOLD;
-    Param_marching_cube_threshold.get_float(&threshold);
+    float threshold = g_chunkMarchingCubeThreshold;
+    if( threshold == -1 )
+    {
+        Param_marching_cube_threshold.get_float(&g_chunkMarchingCubeThreshold);
+        threshold = g_chunkMarchingCubeThreshold;
+    }
 
     MarchingCubeLookup* mcube = MarchingCubeLookup::instance();
     std::vector<Vertex> orderedVertexList;
@@ -142,7 +149,7 @@ void Chunk::recalculate_mesh()
 
                     Vertex edgeAVertex{ };
                     edgeAVertex.position = (edgeAVertexA + edgeAVertexB) / 2.f;
-                    edgeAVertex.colour = { 0.5f, 0.8f, 3.f };
+                    edgeAVertex.colour = m_colour;
 
 
                     glm::vec3 edgeBVertexA = mcube->get_corner_offset(edgeB.first);
@@ -155,7 +162,7 @@ void Chunk::recalculate_mesh()
 
                     Vertex edgeBVertex{ };
                     edgeBVertex.position = (edgeBVertexA + edgeBVertexB) / 2.f;
-                    edgeBVertex.colour = { 0.5f, 0.8f, 3.f };
+                    edgeBVertex.colour = m_colour;
 
 
                     glm::vec3 edgeCVertexA = mcube->get_corner_offset(edgeC.first);
@@ -168,7 +175,7 @@ void Chunk::recalculate_mesh()
 
                     Vertex edgeCVertex{ };
                     edgeCVertex.position = (edgeCVertexA + edgeCVertexB) / 2.f;
-                    edgeCVertex.colour = { 0.5f, 0.8f, 3.f };
+                    edgeCVertex.colour = m_colour;
 
                     orderedVertexList.push_back(edgeCVertex);
                     orderedVertexList.push_back(edgeBVertex);

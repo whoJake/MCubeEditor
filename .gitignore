@@ -14,3 +14,6 @@
 /src/tools/bin-int/
 /src/game/bin/
 /src/game/bin-int/
+
+#logs
+logs/

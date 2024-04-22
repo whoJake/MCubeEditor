@@ -4,6 +4,8 @@
 #include "scene/gameplay/Entity.h"
 #include "SceneObject.h"
 
+extern float g_chunkMarchingCubeThreshold;
+
 class Chunk : public SceneObject
 {
 public:
@@ -37,4 +39,6 @@ private:
     std::vector<float> m_points;
     uint16_t m_resolution;
     float m_unitSize;
+
+    glm::vec3 m_colour;
 };

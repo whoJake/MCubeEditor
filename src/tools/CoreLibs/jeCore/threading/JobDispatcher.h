@@ -20,6 +20,7 @@ enum WorkerState
 
 struct WorkerInfo
 {
+    std::string name;
     std::thread::id id{ };
     WorkerState state{ UNINITIALIZED };
 };
@@ -40,8 +41,11 @@ public:
     static void dispatch_and_wait(uint32_t jobCount, uint32_t groupSize, const std::function<void(DispatchState)>& job);
 
     static void reset_counters();
-private:
+
+    static jclog::Log& get_thread_log(std::thread::id tid = std::this_thread::get_id());
+
     static void poll();
+private:
     static std::atomic<uint32_t>* request_atomic_counter(uint32_t initialValue);
 private:
     static JobDispatch& instance();
@@ -54,4 +58,6 @@ private:
     std::condition_variable m_wakeCondition;
 
     std::unordered_set<std::atomic<uint32_t>*> m_counters{ };
+
+    std::unordered_map<std::thread::id, jclog::Log> m_threadLogs;
 };

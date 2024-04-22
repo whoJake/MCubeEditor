@@ -9,7 +9,7 @@ const std::string_view& Scene::get_name() const
     return m_name;
 }
 
-const std::unordered_map<entid_t, Entity>& Scene::get_scene_entities()
+std::unordered_map<entid_t, Entity>& Scene::get_scene_entities()
 {
     return m_entities;
 }

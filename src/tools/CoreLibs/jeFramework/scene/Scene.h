@@ -21,7 +21,7 @@ public:
 
     const std::string_view& get_name() const;
 
-    const std::unordered_map<entid_t, Entity>& get_scene_entities();
+    std::unordered_map<entid_t, Entity>& get_scene_entities();
 
     Entity* request_create_entity(Entity&& entity);
     void request_destroy_entity(entid_t entity);
