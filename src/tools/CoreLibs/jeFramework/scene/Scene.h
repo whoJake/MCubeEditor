@@ -6,11 +6,12 @@
 #include "gameplay/Blueprint.h"
 #include "rendering/proxies/EntityProxy.h"
 #include "rendering/proxies/BlueprintProxy.h"
+#include "rendering/RenderContext.h"
 
 class Scene
 {
 public:
-    Scene(const std::string_view& name);
+    Scene(vk::RenderContext* context, const std::string_view& name);
     ~Scene() = default;
 
     Scene(Scene&&) = default;
@@ -35,15 +36,12 @@ public:
     const std::unordered_map<bpid_t, BlueprintProxy>& get_blueprint_proxies() const;
     const std::unordered_map<entid_t, EntityProxy>& get_entity_proxies() const;
 
-    void update_physics();
-
-    void update_gamestate();
-
     void sync_proxies();
 
     void resolve_creation_queue();
     void resolve_destruction_queue();
 private:
+    vk::RenderContext* m_context;
     std::string_view m_name;
 
     std::unordered_map<bpid_t, Blueprint> m_blueprints;

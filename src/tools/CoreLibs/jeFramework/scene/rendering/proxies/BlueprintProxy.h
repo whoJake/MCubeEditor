@@ -2,21 +2,21 @@
 
 #include "scene/gameplay/Blueprint.h"
 #include "scene/gameplay/Mesh.h"
+#include "MeshProxy.h"
 
 class BlueprintProxy
 {
 public:
-    BlueprintProxy(Blueprint* blueprint);
+    BlueprintProxy(vk::RenderContext* context, Blueprint* blueprint);
     ~BlueprintProxy() = default;
 
     void sync();
 
     bpid_t get_id() const;
 
-    const Mesh& get_mesh() const;
+    const MeshProxy& get_mesh_proxy() const;
 private:
     Blueprint* m_blueprint;
-    Mesh m_mesh;
-    bpid_t m_id;
     uint32_t m_materialProxy;
+    MeshProxy m_meshProxy;
 };

@@ -57,7 +57,7 @@ Scene& SceneManager::create_empty_scene(const std::string_view& name)
     if( Scene* scene = find_scene(name) )
         return *scene;
 
-    Scene* scene = new Scene(name);
+    Scene* scene = new Scene(m_context, name);
     m_loadedScenes.push_back(scene);
 
     return *scene;
@@ -96,11 +96,16 @@ void SceneManager::set_active_scene(const std::string_view& name)
     }
 }
 
-SceneManager& SceneManager::instance()
+void SceneManager::initialize(vk::RenderContext* context)
 {
     if( !s_instance )
-        s_instance = new SceneManager();
+    {
+        s_instance = new SceneManager(context);
+    }
+}
 
+SceneManager& SceneManager::instance()
+{
     return *s_instance;
 }
 

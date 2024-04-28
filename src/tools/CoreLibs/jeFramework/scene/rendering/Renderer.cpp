@@ -8,8 +8,7 @@
 #include "device/fiDevice.h"
 
 Renderer::Renderer(vk::RenderContext& context) :
-    m_context(context),
-    m_bufferManager(context)
+    m_context(context)
 {
     build_debug_material();
 }
@@ -93,24 +92,18 @@ void Renderer::dispatch_render(SceneProxies scene, const std::vector<Camera*>& c
             sizeof(glm::mat4),
             &modelMatrix);
 
-        BlueprintBuffers& buffers = m_bufferManager.get_mesh_buffer_data(blueprint);
-
-        std::vector<vk::Buffer*> vertexBuffers;
-        for( std::shared_ptr<vk::Buffer>& vertex : buffers.vertex )
-        {
-            vertexBuffers.push_back(vertex.get());
-        }
+        std::vector<vk::Buffer*> vertexBuffers = blueprint.get_mesh_proxy().get_vertex_buffers(m_context.get_active_render_frame_index());
 
         mainCmdBuffer.bind_vertex_buffers(vertexBuffers, 0);
-        mainCmdBuffer.bind_index_buffer(*buffers.index, VK_INDEX_TYPE_UINT16);
+        mainCmdBuffer.bind_index_buffer(*blueprint.get_mesh_proxy().get_index_buffer(m_context.get_active_render_frame_index()), VK_INDEX_TYPE_UINT16);
 
-        mainCmdBuffer.draw_indexed(vk::to_u32(blueprint.get_mesh().get_index_count()));
+        mainCmdBuffer.draw_indexed(vk::to_u32(blueprint.get_mesh_proxy().get_index_count()));
     }
 
     mainCmdBuffer.end_render_pass();
     mainCmdBuffer.end();
 
-    m_context.submit_and_end(mainCmdBuffer);
+    m_context.submit_and_end(mainCmdBuffer); // active frame is set to false here <--
 
     *fence = 0;
 }

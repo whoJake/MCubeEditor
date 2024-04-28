@@ -28,7 +28,12 @@ public:
     float get_point(glm::uvec3 pos) const;
 
     void recalculate_mesh();
+    void recalculate_mesh_mt();
 private:
+    void recalculate_point_mesh(glm::uvec3 point,
+                                std::vector<Vertex>& vertexList,
+                                std::mutex* listMutex = nullptr) const;
+
     size_t coords_to_index(int x,  int y, int z) const;
     size_t get_resolution() const;
 private:
@@ -38,6 +43,8 @@ private:
 
     std::vector<float> m_points;
     uint16_t m_resolution;
+    bool m_dirty{ true };
+    float m_threshold;
     float m_unitSize;
 
     glm::vec3 m_colour;

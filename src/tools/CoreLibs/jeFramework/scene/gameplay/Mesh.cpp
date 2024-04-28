@@ -6,7 +6,7 @@ Mesh::Mesh(const std::vector<std::vector<V>>& vertices,
     m_vertices(vertices),
     m_indices(indices),
     m_vertexDirty(vertices.size(), true),
-    m_indexDirty()
+    m_indexDirty(true)
 {
     if( vertices.size() > 0 )
     {
@@ -19,13 +19,18 @@ Mesh::Mesh(uint32_t vertexBufferCount,
     m_vertices(vertexBufferCount),
     m_indices(indices),
     m_vertexDirty(vertexBufferCount, true),
-    m_indexDirty(),
+    m_indexDirty(true),
     m_vertexCount(0)
 { }
 
 // template<class V, class T>
 void Mesh::set_vertex(size_t i, const V& vertex, uint32_t index)
 {
+    if( m_vertices.at(index).at(i) == vertex )
+    {
+        return;
+    }
+
     m_vertices.at(index).at(i) = vertex;
     set_vertex_dirty(index);
 }
@@ -33,6 +38,11 @@ void Mesh::set_vertex(size_t i, const V& vertex, uint32_t index)
 // template<class V, class T>
 void Mesh::set_index(size_t i, const T& index)
 {
+    if( m_indices[i] == index )
+    {
+        return;
+    }
+
     m_indices[i] = index;
     set_index_dirty();
 }
@@ -131,5 +141,4 @@ void Mesh::resize_vertex_buffers(uint32_t size)
     {
         m_vertices.at(i).resize(size);
     }
-    m_vertexDirty.resize(size, true);
 }

@@ -3,8 +3,8 @@
 #include "rendering/RenderContext.h"
 #include "proxies/BlueprintProxy.h"
 #include "proxies/EntityProxy.h"
+#include "proxies/MeshProxy.h"
 #include "scene/gameplay/Camera.h"
-#include "SceneBufferManager.h"
 
 struct SceneProxies
 {
@@ -32,7 +32,6 @@ private:
 private:
     vk::RenderContext& m_context;
     DebugMaterial m_debugMaterial{ };
-    SceneBufferManager m_bufferManager;
 
     struct CameraMatrixData
     {

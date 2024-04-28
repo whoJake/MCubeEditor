@@ -71,8 +71,9 @@ RenderContext::RenderContext(RenderContext&& other) :
     m_swapchainProperties(other.m_swapchainProperties),
     m_aquiredSemaphore(other.m_aquiredSemaphore),
     m_frames(std::move(other.m_frames)),
-    m_activeFrameIndex(other.m_activeFrameIndex),
-    m_frameActive(other.m_frameActive)
+    m_frameIndex(other.m_frameIndex),
+    m_activeRenderingFrameIndex(other.m_activeRenderingFrameIndex),
+    m_activeRenderFrame(other.m_activeRenderFrame)
 { }
 
 VkSemaphore RenderContext::submit(const Queue&                             queue,
@@ -114,7 +115,7 @@ VkSemaphore RenderContext::submit(const Queue&                             queue
 
 CommandBuffer& RenderContext::begin(CommandBuffer::ResetMode resetMode)
 {
-    if( !m_frameActive )
+    if( !m_activeRenderFrame )
     {
         begin_frame();
     }
@@ -132,14 +133,14 @@ void RenderContext::begin_frame()
         handle_surface_changes();
     }
 
-    VK_ASSERT(!m_frameActive, "The frame is still active so cannot begin a new one. Make sure end_frame has been called.");
-    auto& previousFrame = *m_frames[m_activeFrameIndex];
+    VK_ASSERT(!m_activeRenderFrame, "The frame is still active so cannot begin a new one. Make sure end_frame has been called.");
+    auto& previousFrame = *m_frames[m_activeRenderingFrameIndex];
 
     m_aquiredSemaphore = previousFrame.request_semaphore_with_ownership();
 
     if( m_swapchain )
     {
-        VkResult indexResult = m_swapchain->acquire_next_image(&m_activeFrameIndex, m_aquiredSemaphore, VK_NULL_HANDLE);
+        VkResult indexResult = m_swapchain->acquire_next_image(&m_activeRenderingFrameIndex, m_aquiredSemaphore, VK_NULL_HANDLE);
 
         if( indexResult == VK_SUBOPTIMAL_KHR || indexResult == VK_ERROR_OUT_OF_DATE_KHR )
         {
@@ -147,7 +148,7 @@ void RenderContext::begin_frame()
 
             if( swapchainUpdated )
             {
-                indexResult = m_swapchain->acquire_next_image(&m_activeFrameIndex, m_aquiredSemaphore, VK_NULL_HANDLE);
+                indexResult = m_swapchain->acquire_next_image(&m_activeRenderingFrameIndex, m_aquiredSemaphore, VK_NULL_HANDLE);
             }
         }
 
@@ -158,14 +159,14 @@ void RenderContext::begin_frame()
         }
     }
 
-    m_frameActive = true;
+    m_activeRenderFrame = true;
 
     wait_frame();
 }
 
 void RenderContext::end_frame(VkSemaphore semaphore)
 {
-    VK_ASSERT(m_frameActive, "The frame is not active so cannot end frame. Make sure begin_frame has been called.");
+    VK_ASSERT(m_activeRenderFrame, "The frame is not active so cannot end frame. Make sure begin_frame has been called.");
 
     if( m_swapchain )
     {
@@ -175,7 +176,7 @@ void RenderContext::end_frame(VkSemaphore semaphore)
         presentInfo.pWaitSemaphores = &semaphore;
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &swapchain;
-        presentInfo.pImageIndices = &m_activeFrameIndex;
+        presentInfo.pImageIndices = &m_activeRenderingFrameIndex;
 
         VkResult result = m_device.get_queue_by_present(0).present(presentInfo);
 
@@ -190,7 +191,8 @@ void RenderContext::end_frame(VkSemaphore semaphore)
         get_active_frame().release_owned_semaphore(m_aquiredSemaphore);
         m_aquiredSemaphore = VK_NULL_HANDLE;
     }
-    m_frameActive = false;
+    m_activeRenderFrame = false;
+    m_frameIndex = (m_frameIndex + 1) % m_swapchainProperties.imageCount;
 }
 
 void RenderContext::submit_and_end(CommandBuffer& commandBuffer)
@@ -200,7 +202,7 @@ void RenderContext::submit_and_end(CommandBuffer& commandBuffer)
 
 void RenderContext::submit_and_end(const std::vector<CommandBuffer*>& commandBuffers)
 {
-    VK_ASSERT(m_frameActive, "RenderContext is inactive so cannot submit CommandBuffers, make sure that begin has been called.");
+    VK_ASSERT(m_activeRenderFrame, "RenderContext is inactive so cannot submit CommandBuffers, make sure that begin has been called.");
     VkSemaphore renderComplete = VK_NULL_HANDLE;
 
     if( m_swapchain )
@@ -223,14 +225,19 @@ void RenderContext::wait_frame()
 
 RenderFrame& RenderContext::get_active_frame()
 {
-    VK_ASSERT(m_frameActive, "There is no active frame, make sure that begin_frame has been called.");
-    return *m_frames[m_activeFrameIndex];
+    VK_ASSERT(m_activeRenderFrame, "There is no active frame, make sure that begin_frame has been called.");
+    return *m_frames[m_activeRenderingFrameIndex];
 }
 
-uint32_t RenderContext::get_active_frame_index() const
+uint32_t RenderContext::get_active_render_frame_index() const
 {
-    VK_ASSERT(m_frameActive, "There is no active frame, make sure that begin_frame has been called.");
-    return m_activeFrameIndex;
+    VK_ASSERT(m_activeRenderFrame, "There is no active frame, make sure that begin_frame has been called.");
+    return m_activeRenderingFrameIndex;
+}
+
+uint32_t RenderContext::get_frame_index() const
+{
+    return m_frameIndex;
 }
 
 bool RenderContext::handle_surface_changes(bool forceUpdate)

@@ -10,6 +10,8 @@
 #include "threading/JobDispatcher.h"
 // #include "scene/Scene.h"
 
+extern bool g_useMultithreading;
+
 class MCubeEditorApp : public WindowedApplication
 {
 public:

@@ -4,6 +4,17 @@ struct Vertex
 {
     glm::vec3 position;
     glm::vec3 colour;
+
+    bool operator==(const Vertex& other)
+    {
+        return position == other.position
+            && colour == other.colour;
+    }
+
+    bool operator!=(const Vertex& other)
+    {
+        return !(*this == other);
+    }
 };
 
 // template<class V = Vertex, class T = uint16_t>

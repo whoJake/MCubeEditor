@@ -40,9 +40,9 @@ void JobDispatch::initialize()
     {
         // data
         WorkerInfo& info = instance().m_workers.at(i);
-        info.name = std::format("logs\\THREAD_{}.txt", i);
+        std::string workerName(std::format("WORKER_{}", i));
 
-        std::thread worker([&]{
+        std::thread worker = request_thread(workerName, [&]{
                 std::function<void()> activeJob;
                 info.state = IDLE;
 
@@ -68,8 +68,9 @@ void JobDispatch::initialize()
             std::tuple(info.id),
             std::tuple());
 
-        std::remove(info.name.c_str());
-        pair.first->second.register_target(new jclog::FileTarget(info.name.c_str()));
+        std::string logFilename = std::format("logs/{}.txt", workerName.c_str());
+        std::remove(logFilename.c_str());
+        pair.first->second.register_target(new jclog::FileTarget(logFilename.c_str()));
 
         worker.detach();
     }

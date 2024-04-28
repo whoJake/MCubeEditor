@@ -1,7 +1,8 @@
 #include "Scene.h"
 
-Scene::Scene(const std::string_view& name) :
-    m_name(name)
+Scene::Scene(vk::RenderContext* context, const std::string_view& name) :
+    m_name(name),
+    m_context(context)
 { }
 
 const std::string_view& Scene::get_name() const
@@ -72,12 +73,6 @@ const std::unordered_map<bpid_t, EntityProxy>& Scene::get_entity_proxies() const
     return m_entityProxies;
 }
 
-void Scene::update_physics()
-{ }
-
-void Scene::update_gamestate()
-{ }
-
 void Scene::sync_proxies()
 { 
     // Maybe setup as task?
@@ -119,7 +114,7 @@ void Scene::resolve_creation_queue()
 
             m_blueprintProxies.emplace(std::piecewise_construct,
                                        std::tuple(insertId),
-                                       std::tuple(&insertedBlueprint));
+                                       std::tuple(m_context, &insertedBlueprint));
         }
     }
 

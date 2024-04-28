@@ -56,7 +56,9 @@ public:
 
     RenderFrame& get_active_frame();
 
-    uint32_t get_active_frame_index() const;
+    uint32_t get_frame_index() const;
+
+    uint32_t get_active_render_frame_index() const;
 
     bool handle_surface_changes(bool forceUpdate = false);
 
@@ -84,8 +86,9 @@ private:
     VkSemaphore m_aquiredSemaphore;
 
     std::vector<std::unique_ptr<RenderFrame>> m_frames;
-    uint32_t m_activeFrameIndex{ 0 };
-    bool m_frameActive;
+    uint32_t m_frameIndex{ 0 };
+    uint32_t m_activeRenderingFrameIndex{ 0 };
+    bool m_activeRenderFrame;
 };
 
 } // vk

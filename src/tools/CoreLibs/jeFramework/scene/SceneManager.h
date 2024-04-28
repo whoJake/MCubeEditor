@@ -35,11 +35,15 @@ public:
 
     void set_active_scene(const std::string_view& name);
 private:
-    SceneManager() = default;
+    SceneManager(vk::RenderContext* context) :
+        m_context(context)
+    { }
 private:
+    vk::RenderContext* m_context;
     std::vector<Scene*> m_loadedScenes{ };
     Scene* m_activeScene{ nullptr };
 public:
+    static void initialize(vk::RenderContext* context);
     static SceneManager& instance();
     static void destroy();
 private:

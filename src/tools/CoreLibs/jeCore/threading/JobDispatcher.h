@@ -3,6 +3,7 @@
 #include <functional>
 #include <atomic>
 #include "Queue.h"
+#include "threading.h"
 
 struct DispatchState
 {
@@ -20,7 +21,6 @@ enum WorkerState
 
 struct WorkerInfo
 {
-    std::string name;
     std::thread::id id{ };
     WorkerState state{ UNINITIALIZED };
 };

@@ -20,6 +20,10 @@ PARAM(chunk_resolution);
 #define DEFAULT_UNIT_SIZE 1
 PARAM(chunk_unit_size);
 
+#define DEFAULT_USE_MULTITHREADING false
+bool g_useMultithreading{ DEFAULT_USE_MULTITHREADING };
+PARAM(use_multithreading);
+
 bool firstFrameHack = true;
 
 MCubeEditorApp::MCubeEditorApp() :
@@ -33,6 +37,16 @@ MCubeEditorApp::~MCubeEditorApp()
 
 void MCubeEditorApp::on_app_startup()
 {
+    if( Param_use_multithreading.get() )
+    {
+        g_useMultithreading = true;
+        int temp;
+        if( Param_use_multithreading.get_int(&temp) )
+        {
+            g_useMultithreading = static_cast<bool>(temp);
+        }
+    }
+
     initialize_scene();
     JobDispatch::initialize();
 
@@ -67,15 +81,23 @@ void MCubeEditorApp::update(double deltaTime)
 
     parse_input(deltaTime);
 
-    std::function<void()> updateFunc = [&]{ update_scene(deltaTime); };
-    std::function<void()> renderFunc = [&]{ render_scene(); };
+    if( g_useMultithreading )
+    {
+        std::function<void()> updateFunc = std::bind(&MCubeEditorApp::update_scene, this, deltaTime);
+        std::function<void()> renderFunc = std::bind(&MCubeEditorApp::render_scene, this);
 
-    std::atomic<uint32_t>* updateJob = JobDispatch::execute(updateFunc);
-    std::atomic<uint32_t>* renderJob = JobDispatch::execute(renderFunc);
+        std::atomic<uint32_t>* updateJob = JobDispatch::execute(updateFunc);
+        std::atomic<uint32_t>* renderJob = JobDispatch::execute(renderFunc);
 
-    while( (*updateJob).load() != 0 || (*renderJob).load() != 0 )
-    { }
-    JobDispatch::reset_counters();
+        while( (*updateJob).load() != 0 || (*renderJob).load() != 0 )
+        { }
+        JobDispatch::reset_counters();
+    }
+    else
+    {
+        update_scene(deltaTime);
+        render_scene();
+    }
 
     m_scene->resolve_creation_queue();
     m_scene->resolve_destruction_queue();
@@ -111,7 +133,7 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
 
 void MCubeEditorApp::initialize_scene()
 {
-    m_scene = std::make_unique<Scene>("TEST_SCENE");
+    m_scene = std::make_unique<Scene>(&get_render_context(), "TEST_SCENE");
 
     int beginChunksPerAxis{ 0 };
     if( !Param_start_chunks_per_axis.get_int(&beginChunksPerAxis) )
@@ -162,7 +184,6 @@ void MCubeEditorApp::parse_input(double deltaTime)
         g_chunkMarchingCubeThreshold = std::clamp(g_chunkMarchingCubeThreshold, 0.f, 1.f);
     }
 
-
     float speed = 5.f;
     movement *= speed * deltaTime;
 
@@ -199,23 +220,31 @@ void MCubeEditorApp::update_scene(double deltaTime)
     if( firstFrameHack )
         return;
 
-    std::function<void(DispatchState)> updateChunksFunc = [&](DispatchState state){
-        JobDispatch::get_thread_log().trace("Updating scene with delta time of {}s", deltaTime);
-        glm::ivec3 args{ (state.jobIndex % m_chunksPerAxis), (state.jobIndex / (m_chunksPerAxis)) % m_chunksPerAxis, state.jobIndex / (m_chunksPerAxis * m_chunksPerAxis) };
+    if( g_useMultithreading )
+    {
+        std::function<void(DispatchState)> updateChunksFunc = [&](DispatchState state){
+            glm::ivec3 args{ (state.jobIndex % m_chunksPerAxis), (state.jobIndex / (m_chunksPerAxis)) % m_chunksPerAxis, state.jobIndex / (m_chunksPerAxis * m_chunksPerAxis) };
 
-        if( args.x >= m_chunksPerAxis || args.y >= m_chunksPerAxis || args.z >= m_chunksPerAxis )
-            return;
+            if( args.x >= m_chunksPerAxis || args.y >= m_chunksPerAxis || args.z >= m_chunksPerAxis )
+                return;
 
-        m_chunks.at(args)->recalculate_mesh();
-    };
+            m_chunks.at(args)->recalculate_mesh();
+            };
 
-    JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 5, updateChunksFunc);
+        JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 5, updateChunksFunc);
+    }
+    else
+    {
+        for( auto& chunk : m_chunks )
+        {
+            chunk.second->recalculate_mesh_mt();
+        }
+    }
+    
 }
 
 void MCubeEditorApp::render_scene()
 {
-    JobDispatch::get_thread_log().trace("Rendering {} entities", m_scene->get_entity_proxies().size());
-
     uint32_t renderFinished;
     m_renderer->dispatch_render({ m_scene->get_blueprint_proxies(), m_scene->get_entity_proxies() }, { m_camera.get() }, &renderFinished);
 }
