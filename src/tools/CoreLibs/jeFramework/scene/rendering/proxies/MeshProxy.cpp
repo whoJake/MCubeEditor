@@ -2,7 +2,7 @@
 
 MeshProxy::MeshProxy(vk::RenderContext* context, Mesh* mesh) :
     m_mesh(mesh),
-    m_indexCount(mesh->get_index_count()),
+    m_indexCount(static_cast<uint32_t>(mesh->get_index_count())),
     m_indexBuffer(*context, mesh->get_indices_size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST)
 {
     m_vertexBuffers.reserve(mesh->get_vertex_buffer_count());
@@ -14,7 +14,7 @@ MeshProxy::MeshProxy(vk::RenderContext* context, Mesh* mesh) :
 
 void MeshProxy::sync()
 {
-    m_indexCount = m_mesh->get_index_count();
+    m_indexCount = static_cast<uint32_t>(m_mesh->get_index_count());
 
     for( uint32_t i = 0; i < m_mesh->get_vertex_buffer_count(); i++ )
     {

@@ -7,9 +7,9 @@ public:
 
     const std::array<int8_t, 16>& get_edges_for_state(uint8_t state) const;
 
-    constexpr glm::ivec3 get_corner_offset(uint32_t index) const
+    constexpr glm::uvec3 get_corner_offset(uint32_t index) const
     {
-        constexpr std::array<glm::ivec3, 8> offsets(
+        constexpr std::array<glm::uvec3, 8> offsets(
             {
                 { 0, 0, 0 },
                 { 1, 0, 0 },

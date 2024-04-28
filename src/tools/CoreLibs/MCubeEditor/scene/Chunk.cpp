@@ -8,6 +8,8 @@ float g_chunkMarchingCubeThreshold = -1;
 #define DEFAULT_MARCHING_CUBE_THRESHOLD 0.5
 PARAM(marching_cube_threshold);
 
+PARAM(disable_marching_cube_interpolation);
+
 Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolution, float unitSize) :
     SceneObject(scene),
     m_name(name),
@@ -27,7 +29,7 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
     Entity* entity = get_scene()->request_create_entity(std::move(ent));
     entity->transform().position() = position;
 
-    glm::vec3 centre{ get_resolution() / 2.f, get_resolution() / 2.f, get_resolution() / 2.f };
+    glm::vec3 centre{ 0.f, 0.f, 0.f };
     for( int x = 0; x < get_resolution(); x++ )
     {
         for( int y = 0; y < get_resolution(); y++ )
@@ -35,7 +37,8 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
             for( int z = 0; z < get_resolution(); z++ )
             {
                 glm::vec3 point{ x, y, z };
-                float value = glm::distance(centre, point) / (get_resolution() / 1.5f);
+                glm::vec3 worldPoint = position + (point * unitSize);
+                float value = glm::distance(centre, worldPoint) / 30.f;
                 set_point(point, value);
             }
         }
@@ -171,7 +174,7 @@ void Chunk::recalculate_mesh_mt()
             recalculate_point_mesh(point, vertices, &lock);
     };
 
-    JobDispatch::dispatch_and_wait(m_resolution * m_resolution * m_resolution, 25, job);
+    JobDispatch::dispatch_and_wait(m_resolution * m_resolution * m_resolution, 50, job);
 
     vertices.shrink_to_fit();
     mesh().set_vertices(vertices, 0);
@@ -185,6 +188,16 @@ void Chunk::recalculate_mesh_mt()
 
     mesh().set_indices(indicies);
     m_dirty = false;
+}
+
+glm::vec3 lerp_points(glm::vec3 p1, glm::vec3 p2, float value)
+{
+    return p1 + ((p2 - p1) * value);
+}
+
+float inverse_lerp(float value, float from, float to)
+{
+    return (value - from) / (to - from);
 }
 
 void Chunk::recalculate_point_mesh(glm::uvec3 point, std::vector<Vertex>& vertexList, std::mutex* listMutex) const
@@ -233,7 +246,10 @@ void Chunk::recalculate_point_mesh(glm::uvec3 point, std::vector<Vertex>& vertex
         edgeAVertexB += voxelPhysicalOrigin;
 
         Vertex edgeAVertex{ };
-        edgeAVertex.position = (edgeAVertexA + edgeAVertexB) / 2.f;
+        float interp = Param_disable_marching_cube_interpolation.get()
+            ? 0.5f
+            : inverse_lerp(m_threshold, get_point(point + mcube->get_corner_offset(edgeA.first)), get_point(point + mcube->get_corner_offset(edgeA.second)));
+        edgeAVertex.position = lerp_points(edgeAVertexA, edgeAVertexB, interp);
         edgeAVertex.colour = m_colour;
 
 
@@ -246,7 +262,10 @@ void Chunk::recalculate_point_mesh(glm::uvec3 point, std::vector<Vertex>& vertex
         edgeBVertexB += voxelPhysicalOrigin;
 
         Vertex edgeBVertex{ };
-        edgeBVertex.position = (edgeBVertexA + edgeBVertexB) / 2.f;
+        interp = Param_disable_marching_cube_interpolation.get()
+            ? 0.5f
+            : inverse_lerp(m_threshold, get_point(point + mcube->get_corner_offset(edgeB.first)), get_point(point + mcube->get_corner_offset(edgeB.second)));
+        edgeBVertex.position = lerp_points(edgeBVertexA, edgeBVertexB, interp);
         edgeBVertex.colour = m_colour;
 
 
@@ -259,7 +278,10 @@ void Chunk::recalculate_point_mesh(glm::uvec3 point, std::vector<Vertex>& vertex
         edgeCVertexB += voxelPhysicalOrigin;
 
         Vertex edgeCVertex{ };
-        edgeCVertex.position = (edgeCVertexA + edgeCVertexB) / 2.f;
+        interp = Param_disable_marching_cube_interpolation.get()
+            ? 0.5f
+            : inverse_lerp(m_threshold, get_point(point + mcube->get_corner_offset(edgeC.first)), get_point(point + mcube->get_corner_offset(edgeC.second)));
+        edgeCVertex.position = lerp_points(edgeCVertexA, edgeCVertexB, interp);
         edgeCVertex.colour = m_colour;
 
         {

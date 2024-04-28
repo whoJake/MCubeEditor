@@ -52,9 +52,6 @@ void MCubeEditorApp::on_app_startup()
 
     m_renderer = std::make_unique<Renderer>(get_render_context());
 
-    m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 2000.f);
-    m_camera->translate({ 2.f, 2.f, 2.f });
-
     if( Param_open_scene.get() )
     {
         // Open scene from file
@@ -133,6 +130,9 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
 
 void MCubeEditorApp::initialize_scene()
 {
+    m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 2000.f);
+    m_camera->translate({ 0.f, 2.f, 20.f });
+
     m_scene = std::make_unique<Scene>(&get_render_context(), "TEST_SCENE");
 
     int beginChunksPerAxis{ 0 };
@@ -143,6 +143,8 @@ void MCubeEditorApp::initialize_scene()
     beginChunksPerAxis = std::max(beginChunksPerAxis, 1);
     m_chunksPerAxis = beginChunksPerAxis;
 
+    glm::ivec3 offset{ m_chunksPerAxis / 2, m_chunksPerAxis / 2, m_chunksPerAxis / 2 };
+
     for( int x = 0; x < beginChunksPerAxis; x++ )
     {
         for( int y = 0; y < beginChunksPerAxis; y++ )
@@ -151,7 +153,7 @@ void MCubeEditorApp::initialize_scene()
             {
                 // idc about trying to centre around 0,0,0 lol
                 glm::ivec3 chunkIndex{ x, y, z };
-                create_chunk(chunkIndex);
+                create_chunk(chunkIndex - offset);
             }
         }
     }
@@ -271,7 +273,7 @@ void MCubeEditorApp::create_chunk(glm::ivec3 index)
     unitSize = std::max(unitSize, 0.01f);
 
     float chunkSize = chunkResolution * unitSize;
-    glm::vec3 centre{ index.x * chunkSize, index.y * chunkSize, index.z * chunkSize };
+    glm::vec3 centre{ index.x * (chunkSize - 1), index.y * (chunkSize-1), index.z * (chunkSize-1) };
 
     m_chunks.insert(std::pair(index,
         std::make_unique<Chunk>(m_scene.get(), std::format("chunk:{}-{}-{}", index.x, index.y, index.z), centre, chunkResolution, unitSize)));
