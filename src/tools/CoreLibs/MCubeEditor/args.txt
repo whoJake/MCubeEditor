@@ -1,3 +1,4 @@
 -start_chunks_per_axis=4
 -marching_cube_threshold=0.5
 -detect_worker_thread_count
+-use_multithreading

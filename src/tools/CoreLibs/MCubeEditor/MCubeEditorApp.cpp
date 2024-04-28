@@ -224,13 +224,14 @@ void MCubeEditorApp::update_scene(double deltaTime)
 
     if( g_useMultithreading )
     {
-        std::function<void(DispatchState)> updateChunksFunc = [&](DispatchState state){
+        glm::ivec3 offset{ m_chunksPerAxis / 2, m_chunksPerAxis / 2, m_chunksPerAxis / 2 };
+        std::function<void(DispatchState)> updateChunksFunc = [&, offset](DispatchState state){
             glm::ivec3 args{ (state.jobIndex % m_chunksPerAxis), (state.jobIndex / (m_chunksPerAxis)) % m_chunksPerAxis, state.jobIndex / (m_chunksPerAxis * m_chunksPerAxis) };
 
             if( args.x >= m_chunksPerAxis || args.y >= m_chunksPerAxis || args.z >= m_chunksPerAxis )
                 return;
 
-            m_chunks.at(args)->recalculate_mesh();
+            m_chunks.at(args - offset)->recalculate_mesh();
             };
 
         JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 5, updateChunksFunc);
