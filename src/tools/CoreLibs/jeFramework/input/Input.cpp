@@ -73,10 +73,22 @@ CursorLockState Input::get_cursor_lock_state()
     return get_instance()->m_primaryCursorLockState;
 }
 
+double Input::get_mouse_scroll_horizontal()
+{
+    return get_instance()->m_scrollXOffset;
+}
+
+double Input::get_mouse_scroll_vertical()
+{
+    return get_instance()->m_scrollYOffset;
+}
+
 void Input::tick()
 {
     get_instance()->m_previousMouseX = get_instance()->m_currentMouseX;
     get_instance()->m_previousMouseY = get_instance()->m_currentMouseY;
+    get_instance()->m_scrollXOffset = 0.f;
+    get_instance()->m_scrollYOffset = 0.f;
 
     for( KeyState& state : get_instance()->m_keyStates )
     {
@@ -180,6 +192,8 @@ bool Input::register_mouse_release_event(MouseReleasedEvent& event)
 
 bool Input::register_mouse_scroll_event(MouseScrolledEvent& event)
 {
+    get_instance()->m_scrollXOffset = event.get_offset_x();
+    get_instance()->m_scrollYOffset = event.get_offset_y();
     return false;
 }
 

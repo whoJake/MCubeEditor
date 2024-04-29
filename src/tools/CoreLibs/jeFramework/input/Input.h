@@ -36,6 +36,9 @@ public:
 
     static CursorLockState get_cursor_lock_state();
 
+    static double get_mouse_scroll_horizontal();
+    static double get_mouse_scroll_vertical();
+
     static void tick();
 
     static bool register_event(Event& event);
@@ -67,6 +70,9 @@ private:
 
     double m_previousMouseX{ 0.0 };
     double m_previousMouseY{ 0.0 };
+
+    double m_scrollXOffset{ 0.f };
+    double m_scrollYOffset{ 0.f };
 
 private:
     Input();

@@ -36,16 +36,16 @@ private:
     void render_scene();
 
     void create_chunk(glm::ivec3 index);
+
+    glm::vec3 get_cursor_position() const;
 private:
     std::unique_ptr<Renderer> m_renderer;
     std::unique_ptr<PerspectiveCamera> m_camera;
     std::unique_ptr<Scene> m_scene;
 
-    bpid_t m_blueprint{ 0 };
-    float m_currentUpEntityScale = 1.f;
-    float m_currentDownEntityScale = 1.f;
-
     std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_chunks;
-    glm::ivec3 m_currentChunkPos{ 0, 0, 0 };
     int m_chunksPerAxis{ 0 };
+    float m_cursorDistanceFromCamera{ 5.f };
+    float m_cursorScale{ 1.f };
+    entid_t m_cursor{ 0 };
 };

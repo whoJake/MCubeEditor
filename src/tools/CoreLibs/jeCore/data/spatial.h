@@ -26,6 +26,20 @@ struct AABoundingBox
             && point.z >= min.z && point.z <= max.z;
     }
 
+    inline constexpr bool contains(const glm::vec<3, T>& point, float radius) const
+    {
+        float dsqr = radius * radius;
+
+        /* assume C1 and C2 are element-wise sorted, if not, do that now */
+        if (point.x < min.x) dsqr -= (point.x - min.x) * (point.x - min.x);
+        else if (point.x > max.x) dsqr -= (point.x - max.x) * (point.x - max.x);
+        if (point.y < min.y) dsqr -= (point.y - min.y) * (point.y - min.y);
+        else if (point.y > max.y) dsqr -= (point.y - max.y) * (point.y - max.y);
+        if (point.z < min.z) dsqr -= (point.z - min.z) * (point.z - min.z);
+        else if (point.z > max.z) dsqr -= (point.z - max.z) * (point.z - max.z);
+        return dsqr > 0;
+    }
+
     inline constexpr bool intersects(const AABoundingBox<T>& other) const
     {
         return other.min.x <= max.x && other.max.x >= min.x
@@ -47,12 +61,12 @@ struct BoundingSphere
 
     inline constexpr bool contains(const glm::vec<3, T>& point) const
     {
-        return std::abs(point - centre) <= radius;
+        return glm::distance(point, centre) <= radius;
     }
 
     inline constexpr bool intersects(const BoundingSphere<T>& other) const
     {
-        return std::abs(other.centre - centre) <= radius + other.radius;
+        return glm::distance(other.centre, centre) <= radius + other.radius;
     }
 
     inline constexpr auto operator<=>(const BoundingSphere<T>&) const = default;

@@ -135,6 +135,17 @@ void MCubeEditorApp::initialize_scene()
 
     m_scene = std::make_unique<Scene>(&get_render_context(), "TEST_SCENE");
 
+    // Make cursor object
+    Blueprint cursor("Cursor");
+    cursor.mesh().set_vertices(s_verticesUnitCube, 0);
+    cursor.mesh().set_indices(s_indicesUnitCube);
+
+    Entity cursorEnt(cursor.get_id(), get_cursor_position());
+    m_cursor = cursorEnt.get_id();
+    
+    m_scene->request_create_blueprint(std::move(cursor));
+    m_scene->request_create_entity(std::move(cursorEnt));
+
     int beginChunksPerAxis{ 0 };
     if( !Param_start_chunks_per_axis.get_int(&beginChunksPerAxis) )
     {
@@ -186,7 +197,7 @@ void MCubeEditorApp::parse_input(double deltaTime)
         g_chunkMarchingCubeThreshold = std::clamp(g_chunkMarchingCubeThreshold, 0.f, 1.f);
     }
 
-    float speed = 5.f;
+    float speed = 10.f;
     movement *= speed * deltaTime;
 
     if( Input::get_mouse_button_pressed(1) )
@@ -203,10 +214,10 @@ void MCubeEditorApp::parse_input(double deltaTime)
 
     if( Input::get_mouse_button_down(1) )
     {
-        float sensitivity = 70.f;
+        float sensitivity = .5f;
 
-        float mouseX = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_horizontal());
-        float mouseY = static_cast<float>(sensitivity * deltaTime * Input::get_mouse_move_vertical());
+        float mouseX = static_cast<float>(sensitivity * Input::get_mouse_move_horizontal());
+        float mouseY = static_cast<float>(sensitivity * Input::get_mouse_move_vertical());
 
         m_camera->rotate(glm::angleAxis(glm::radians(mouseY), cameraRight));
         m_camera->rotate(glm::angleAxis(glm::radians(mouseX), glm::vec3(0.f, 1.f, 0.f)));
@@ -215,6 +226,21 @@ void MCubeEditorApp::parse_input(double deltaTime)
     glm::vec3 translation = cameraRight * movement.x + cameraForward * movement.z + glm::vec3(0.f, 1.f, 0.f) * movement.y;
 
     m_camera->translate(translation);
+
+    // Move cursor object
+    float cursorDistMoveSpeed = 5.f;
+    if( Input::get_key_down(KeyCode::Q) )
+    {
+        m_cursorDistanceFromCamera += cursorDistMoveSpeed * static_cast<float>(deltaTime);
+    }
+    if( Input::get_key_down(KeyCode::E) )
+    {
+        m_cursorDistanceFromCamera += cursorDistMoveSpeed * -static_cast<float>(deltaTime);
+    }
+    m_cursorDistanceFromCamera = std::clamp(m_cursorDistanceFromCamera, 2.f, 100.f);
+
+    m_cursorScale += 0.1f * static_cast<float>(Input::get_mouse_scroll_vertical());
+    m_cursorScale = std::clamp(m_cursorScale, 0.1f, 50.f);
 }
 
 void MCubeEditorApp::update_scene(double deltaTime)
@@ -222,6 +248,20 @@ void MCubeEditorApp::update_scene(double deltaTime)
     if( firstFrameHack )
         return;
 
+    // Update cursor
+    Entity* cursorEntity = m_scene->get_entity(m_cursor);
+    cursorEntity->transform().position() = get_cursor_position();
+    //cursorEntity->transform().scale() = glm::vec3(1.f, 1.f, 1.f) * m_cursorScale;
+
+    if( Input::get_mouse_button_down(0) )
+    {
+        for( auto& chunk : m_chunks )
+        {
+            chunk.second->sphere_edit(cursorEntity->transform().position(), m_cursorScale);
+        }
+    }
+
+    // Update chunks
     if( g_useMultithreading )
     {
         glm::ivec3 offset{ m_chunksPerAxis / 2, m_chunksPerAxis / 2, m_chunksPerAxis / 2 };
@@ -232,9 +272,9 @@ void MCubeEditorApp::update_scene(double deltaTime)
                 return;
 
             m_chunks.at(args - offset)->recalculate_mesh();
-            };
+        };
 
-        JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 5, updateChunksFunc);
+        JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 1, updateChunksFunc);
     }
     else
     {
@@ -243,7 +283,6 @@ void MCubeEditorApp::update_scene(double deltaTime)
             chunk.second->recalculate_mesh_mt();
         }
     }
-    
 }
 
 void MCubeEditorApp::render_scene()
@@ -278,6 +317,12 @@ void MCubeEditorApp::create_chunk(glm::ivec3 index)
 
     m_chunks.insert(std::pair(index,
         std::make_unique<Chunk>(m_scene.get(), std::format("chunk:{}-{}-{}", index.x, index.y, index.z), centre, chunkResolution, unitSize)));
+}
+
+glm::vec3 MCubeEditorApp::get_cursor_position() const
+{
+    glm::vec3 forwardVector = glm::vec3(0.f, 0.f, -1.f) * m_camera->get_rotation();
+    return m_camera->get_position() + (forwardVector * m_cursorDistanceFromCamera);
 }
 
 std::vector<VkPresentModeKHR> MCubeEditorApp::request_swapchain_present_mode() const

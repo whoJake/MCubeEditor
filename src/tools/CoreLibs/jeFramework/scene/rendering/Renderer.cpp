@@ -173,7 +173,7 @@ void Renderer::build_debug_material()
     inputStage.attributes.push_back(attributeDescription2);
 
     vk::RasterizationState rast{ };
-    rast.polygonMode = VK_POLYGON_MODE_FILL;
+    rast.polygonMode = VK_POLYGON_MODE_LINE;
 
     m_debugMaterial.pipelineState.set_vertex_input_state(inputStage);
     m_debugMaterial.pipelineState.set_rasterization_state(rast);
