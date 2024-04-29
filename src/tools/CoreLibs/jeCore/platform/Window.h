@@ -49,7 +49,7 @@ public:
         bool resizable = true;
         VSync vsync = VSync::Default;
         Position position = { 0, 0 };
-        Extent extent = { 1200, 900 };
+        Extent extent = { 1600, 1200 };
         std::function<void(Event&)> eventfn = [](Event& e) {};
     };
 

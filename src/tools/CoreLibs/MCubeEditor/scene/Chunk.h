@@ -27,7 +27,7 @@ public:
     float get_point(int x, int y, int z) const;
     float get_point(glm::uvec3 pos) const;
 
-    void sphere_edit(glm::vec3 pos, float radius);
+    void sphere_edit(glm::vec3 pos, float radius, float deltaTime, bool addition);
 
     void recalculate_mesh();
     void recalculate_mesh_mt();

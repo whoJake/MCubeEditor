@@ -5,15 +5,15 @@
 
 inline static const std::vector<Vertex> s_verticesUnitCube
 {
-    //      Positions               Colours
-    { { -0.5f, -0.5f, -0.5f }, { 0.f, 0.f, 0.f } },
-    { { 0.5f,  -0.5f, -0.5f }, { 1.f, 0.f, 0.f } },
-    { { -0.5f, 0.5f,  -0.5f }, { 0.f, 1.f, 0.f } },
-    { { 0.5f,  0.5f,  -0.5f }, { 1.f, 1.f, 0.f } },
-    { { -0.5f, -0.5f, 0.5f },  { 0.f, 0.f, 1.f } },
-    { { 0.5f,  -0.5f, 0.5f },  { 1.f, 0.f, 1.f } },
-    { { -0.5f, 0.5f,  0.5f },  { 0.f, 1.f, 1.f } },
-    { { 0.5f,  0.5f,  0.5f },  { 1.f, 1.f, 1.f } }
+    //      Positions        Normals   Colours
+    { { -0.5f, -0.5f, -0.5f }, { }, { 0.f, 0.f, 0.f } },
+    { { 0.5f,  -0.5f, -0.5f }, { }, { 1.f, 0.f, 0.f } },
+    { { -0.5f, 0.5f,  -0.5f }, { }, { 0.f, 1.f, 0.f } },
+    { { 0.5f,  0.5f,  -0.5f }, { }, { 1.f, 1.f, 0.f } },
+    { { -0.5f, -0.5f, 0.5f },  { }, { 0.f, 0.f, 1.f } },
+    { { 0.5f,  -0.5f, 0.5f },  { }, { 1.f, 0.f, 1.f } },
+    { { -0.5f, 0.5f,  0.5f },  { }, { 0.f, 1.f, 1.f } },
+    { { 0.5f,  0.5f,  0.5f },  { }, { 1.f, 1.f, 1.f } }
 };
 
 inline static const std::vector<uint16_t> s_indicesUnitCube
@@ -45,10 +45,10 @@ inline static const std::vector<uint16_t> s_indicesUnitCube
 
 inline static const std::vector<Vertex> s_verticesUnitPlane
 {
-    { { -0.5f, 0.f, -0.5f }, { 0.f, 0.f, 0.f } },
-    { { 0.5f,  0.f, -0.5f }, { 1.f, 0.f, 0.f } },
-    { { -0.5f, 0.f, 0.5f },  { 0.f, 1.f, 0.f } },
-    { { 0.5f,  0.f, 0.5f },  { 1.f, 1.f, 0.f } }
+    { { -0.5f, 0.f, -0.5f }, { }, { 0.f, 0.f, 0.f } },
+    { { 0.5f,  0.f, -0.5f }, { }, { 1.f, 0.f, 0.f } },
+    { { -0.5f, 0.f, 0.5f },  { }, { 0.f, 1.f, 0.f } },
+    { { 0.5f,  0.f, 0.5f },  { }, { 1.f, 1.f, 0.f } }
 };
 
 inline static const std::vector<uint16_t> s_indicesUnitPlane

@@ -17,3 +17,6 @@
 
 #logs
 logs/
+
+#build
+#build/

@@ -3,11 +3,13 @@
 struct Vertex
 {
     glm::vec3 position;
+    glm::vec3 normal;
     glm::vec3 colour;
 
     bool operator==(const Vertex& other)
     {
         return position == other.position
+            && normal == other.normal
             && colour == other.colour;
     }
 
@@ -62,6 +64,8 @@ public:
 
     bool get_vertex_dirty(uint32_t index) const;
     bool get_index_dirty() const;
+
+    void recalculate_normals();
 private:
     void resize_vertex_buffers(uint32_t size);
 private:

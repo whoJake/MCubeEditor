@@ -142,3 +142,24 @@ void Mesh::resize_vertex_buffers(uint32_t size)
         m_vertices.at(i).resize(size);
     }
 }
+
+void Mesh::recalculate_normals()
+{
+    if( m_indices.size() < 3u )
+    {
+        return;
+    }
+
+    for( size_t i = 0; i < m_indices.size() - 2u; i+=3 )
+    {
+        Vertex a = get_vertices(0).at(m_indices.at(i));
+        Vertex b = get_vertices(0).at(m_indices.at(i+1));
+        Vertex c = get_vertices(0).at(m_indices.at(i+2));
+
+        glm::vec3 cross = glm::cross(b.position - a.position, c.position - a.position);
+        glm::vec3 normal = glm::normalize(cross);
+        m_vertices.at(0).at(m_indices.at(i)).normal = normal;
+        m_vertices.at(0).at(m_indices.at(i+1)).normal = normal;
+        m_vertices.at(0).at(m_indices.at(i+2)).normal = normal;
+    }
+}

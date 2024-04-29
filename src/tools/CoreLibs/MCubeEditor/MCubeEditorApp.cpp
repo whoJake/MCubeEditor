@@ -131,7 +131,7 @@ bool MCubeEditorApp::on_window_resize(WindowResizeEvent& e)
 void MCubeEditorApp::initialize_scene()
 {
     m_camera = std::make_unique<PerspectiveCamera>(90.f, 4.f / 3.f, 0.02f, 2000.f);
-    m_camera->translate({ 0.f, 2.f, 20.f });
+    m_camera->translate({ 0.f, 5.f, 30.f });
 
     m_scene = std::make_unique<Scene>(&get_render_context(), "TEST_SCENE");
 
@@ -253,11 +253,11 @@ void MCubeEditorApp::update_scene(double deltaTime)
     cursorEntity->transform().position() = get_cursor_position();
     //cursorEntity->transform().scale() = glm::vec3(1.f, 1.f, 1.f) * m_cursorScale;
 
-    if( Input::get_mouse_button_down(0) )
+    if( Input::get_mouse_button_down(0) || Input::get_mouse_button_down(2) )
     {
         for( auto& chunk : m_chunks )
         {
-            chunk.second->sphere_edit(cursorEntity->transform().position(), m_cursorScale);
+            chunk.second->sphere_edit(get_cursor_position(), m_cursorScale, static_cast<float>(deltaTime), !Input::get_mouse_button_down(2));
         }
     }
 

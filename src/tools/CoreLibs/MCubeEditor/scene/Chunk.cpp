@@ -19,8 +19,10 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
 {
     m_points.resize(get_resolution() * get_resolution() * get_resolution());
 
-    m_bounds.min = position;
-    m_bounds.max = position + (glm::vec3(1.f, 1.f, 1.f) * (resolution * unitSize));
+    glm::vec3 extent = glm::vec3(1.f, 1.f, 1.f) * unitSize * (m_resolution / 2.f);
+
+    m_bounds.min = position - extent;
+    m_bounds.max = position + extent;
 
     Blueprint bp(name);
     m_blueprint = bp.get_id();
@@ -30,7 +32,7 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
     Entity ent(m_blueprint);
     m_entity = ent.get_id();
     Entity* entity = get_scene()->request_create_entity(std::move(ent));
-    entity->transform().position() = position;
+    entity->transform().position() = m_bounds.centre();
 
     glm::vec3 centre{ 0.f, 0.f, 0.f };
     for( int x = 0; x < get_resolution(); x++ )
@@ -40,13 +42,13 @@ Chunk::Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolu
             for( int z = 0; z < get_resolution(); z++ )
             {
                 glm::vec3 point{ x, y, z };
-                glm::vec3 worldPoint = position + (point * unitSize);
-                float value = glm::distance(centre, worldPoint) / 30.f;
+                glm::vec3 worldPoint = m_bounds.min + (point * unitSize);
+                float value = glm::distance(centre, worldPoint) / 25.f;
                 set_point(point, value);
             }
         }
     }
-
+    
     m_colour = { (rand() % 255) / 255.f, (rand() % 255) / 255.f, (rand() % 255) / 255.f };
 }
 
@@ -71,6 +73,7 @@ Transform& Chunk::transform()
 void Chunk::set_point(int x, int y, int z, float value)
 {
     size_t index = coords_to_index(x, y, z);
+    value = std::clamp(value, 0.f, 1.f);
     if( m_points.at(index) != value )
     {
         m_points.at(index) = value;
@@ -99,7 +102,7 @@ size_t Chunk::get_resolution() const
     return static_cast<size_t>(m_resolution);
 }
 
-void Chunk::sphere_edit(glm::vec3 pos, float radius)
+void Chunk::sphere_edit(glm::vec3 pos, float radius, float deltaTime, bool addition)
 {
     BoundingSphere<float> influence{ };
     influence.centre = pos;
@@ -120,17 +123,11 @@ void Chunk::sphere_edit(glm::vec3 pos, float radius)
                 glm::vec3 point{ x, y, z };
                 glm::vec3 worldPoint = m_bounds.min + (point * m_unitSize);
 
-                /*
-                if( !influence.contains(worldPoint) )
-                {
-                    return;
-                }
-                */
+                float currentValue = get_point(point);
+                float newValue = -(glm::distance(worldPoint, influence.centre) - influence.radius) / (influence.radius);
+                newValue = std::clamp(newValue * deltaTime * 2.f, 0.f, 1.f);
 
-                float value = std::clamp(-(glm::distance(worldPoint, influence.centre) - influence.radius) / influence.radius, 0.f, 1.f);
-                float prevValue = get_point(point);
-                float newValue = std::clamp(prevValue - value, 0.f, 1.f);
-                set_point(point, newValue);
+                set_point(point, addition ? currentValue - newValue : currentValue + newValue);
             }
         }
     }
@@ -176,6 +173,7 @@ void Chunk::recalculate_mesh()
 
     mesh().set_indices(indicies);
     m_dirty = false;
+    mesh().recalculate_normals();
 }
 
 void Chunk::recalculate_mesh_mt()
@@ -227,6 +225,7 @@ void Chunk::recalculate_mesh_mt()
 
     mesh().set_indices(indicies);
     m_dirty = false;
+    mesh().recalculate_normals();
 }
 
 glm::vec3 lerp_points(glm::vec3 p1, glm::vec3 p2, float value)

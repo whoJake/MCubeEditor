@@ -7,6 +7,8 @@
 
 #include "device/fiDevice.h"
 
+PARAM(wireframe);
+
 Renderer::Renderer(vk::RenderContext& context) :
     m_context(context)
 {
@@ -153,27 +155,34 @@ void Renderer::build_debug_material()
     VkVertexInputBindingDescription bindingDescription{ };
     bindingDescription.binding = 0;
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-    bindingDescription.stride = sizeof(glm::vec3) + sizeof(glm::vec3);
+    bindingDescription.stride = sizeof(Vertex);
 
     VkVertexInputAttributeDescription attributeDescription{ };
     attributeDescription.binding = 0;
     attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescription.location = 0;
-    attributeDescription.offset = 0;
+    attributeDescription.offset = offsetof(Vertex, Vertex::position);
 
     VkVertexInputAttributeDescription attributeDescription2{ };
     attributeDescription2.binding = 0;
     attributeDescription2.format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescription2.location = 1;
-    attributeDescription2.offset = sizeof(glm::vec3);
+    attributeDescription2.offset = offsetof(Vertex, Vertex::normal);
+
+    VkVertexInputAttributeDescription attributeDescription3{ };
+    attributeDescription3.binding = 0;
+    attributeDescription3.format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescription3.location = 2;
+    attributeDescription3.offset = offsetof(Vertex, Vertex::colour);
 
     vk::VertexInputStageState inputStage{ };
     inputStage.bindings.push_back(bindingDescription);
     inputStage.attributes.push_back(attributeDescription);
     inputStage.attributes.push_back(attributeDescription2);
+    inputStage.attributes.push_back(attributeDescription3);
 
     vk::RasterizationState rast{ };
-    rast.polygonMode = VK_POLYGON_MODE_LINE;
+    rast.polygonMode = Param_wireframe.get() ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
 
     m_debugMaterial.pipelineState.set_vertex_input_state(inputStage);
     m_debugMaterial.pipelineState.set_rasterization_state(rast);
