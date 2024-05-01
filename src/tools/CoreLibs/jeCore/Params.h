@@ -2,7 +2,7 @@
 
 #include <string>
 
-#define PARAM(name) ::Param Param_##name(#name)
+#define PARAM(name) inline ::Param Param_##name(#name)
 
 #ifdef CFG_DEBUG
     #define DEBUG_PARAM(name) PARAM(name)

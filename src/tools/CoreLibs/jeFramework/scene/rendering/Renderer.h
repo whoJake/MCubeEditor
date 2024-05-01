@@ -20,6 +20,8 @@ struct DebugMaterial
     vk::PipelineState pipelineState{ };
 };
 
+PARAM(wireframe);
+
 class Renderer
 {
 public:

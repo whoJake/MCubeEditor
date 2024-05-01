@@ -7,8 +7,6 @@
 
 #include "device/fiDevice.h"
 
-PARAM(wireframe);
-
 Renderer::Renderer(vk::RenderContext& context) :
     m_context(context)
 {

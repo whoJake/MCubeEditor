@@ -7,8 +7,6 @@
 namespace vk
 {
 
-#ifdef USE_VK_VALIDATION_LAYERS
-
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_callback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
     if( severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT )
@@ -36,7 +34,6 @@ void destroy_debug_utils_messenger(VkInstance instance, VkDebugUtilsMessengerEXT
     if( func != nullptr )
         func(instance, debugMessenger, pAllocator);
 }
-#endif
 
 Instance::Instance(const std::string&             applicationName,
                    const std::string&             engineName,
@@ -47,50 +44,51 @@ Instance::Instance(const std::string&             applicationName,
     m_apiVersion(apiVersion),
     m_enabledExtensions(enabledExtensions)
 {
-#ifdef USE_VK_VALIDATION_LAYERS
-    uint32_t validationLayerCount{ 0 };
-    vkEnumerateInstanceLayerProperties(&validationLayerCount, nullptr);
-
-    std::vector<VkLayerProperties> availableLayers(validationLayerCount);
-    vkEnumerateInstanceLayerProperties(&validationLayerCount, availableLayers.data());
-
-    /// log available layers
-    JCLOG_DEBUG(m_log, "Available Instance Layers: ");
-    for( auto& layer : availableLayers )
-        JCLOG_DEBUG(m_log, "\t{}", std::string(layer.layerName).c_str());
-
-    for( const char* layerName : enabledValidationLayers )
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{ VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+    if( Param_vulkan_debug_utils.get() )
     {
-        bool foundLayer{ false };
+        uint32_t validationLayerCount{ 0 };
+        vkEnumerateInstanceLayerProperties(&validationLayerCount, nullptr);
 
-        for( const auto& layerProperty : availableLayers )
+        std::vector<VkLayerProperties> availableLayers(validationLayerCount);
+        vkEnumerateInstanceLayerProperties(&validationLayerCount, availableLayers.data());
+
+        /// log available layers
+        JCLOG_DEBUG(m_log, "Available Instance Layers: ");
+        for( auto& layer : availableLayers )
+            JCLOG_DEBUG(m_log, "\t{}", std::string(layer.layerName).c_str());
+
+        for( const char* layerName : enabledValidationLayers )
         {
-            if( strcmp(layerName, layerProperty.layerName) == 0 ) {
-                foundLayer = true;
-                break;
+            bool foundLayer{ false };
+
+            for( const auto& layerProperty : availableLayers )
+            {
+                if( strcmp(layerName, layerProperty.layerName) == 0 ) {
+                    foundLayer = true;
+                    break;
+                }
+            }
+
+            if( !foundLayer )
+            {
+                JCLOG_ERROR(m_log, "Validation layer {} requested but not available", layerName);
+                QUITFMT("Requested validation layer which is not available. See above for details.");
             }
         }
 
-        if( !foundLayer )
-        {
-            JCLOG_ERROR(m_log, "Validation layer {} requested but not available", layerName);
-            QUITFMT("Requested validation layer which is not available. See above for details.");
-        }
+        debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        //  | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+
+        debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
+            | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
+
+        debugCreateInfo.pfnUserCallback = &debug_utils_callback;
+        debugCreateInfo.pUserData = nullptr;
     }
-
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{ VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
-    debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    //  | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-
-    debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
-        | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
-
-    debugCreateInfo.pfnUserCallback = &debug_utils_callback;
-    debugCreateInfo.pUserData = nullptr;
-#endif
 
     uint32_t availableExtensionCount{ 0 };
     vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, nullptr);
@@ -134,30 +132,36 @@ Instance::Instance(const std::string&             applicationName,
     createInfo.pApplicationInfo = &appInfo;
     createInfo.enabledExtensionCount = to_u32(enabledExtensions.size());
     createInfo.ppEnabledExtensionNames = enabledExtensions.data();
-#ifdef USE_VK_VALIDATION_LAYERS
-    createInfo.enabledLayerCount = to_u32(enabledValidationLayers.size());
-    createInfo.ppEnabledLayerNames = enabledValidationLayers.data();
-    createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-#else
-    createInfo.enabledLayerCount = 0;
-#endif
+
+    if( Param_vulkan_debug_utils.get() )
+    {
+        createInfo.enabledLayerCount = to_u32(enabledValidationLayers.size());
+        createInfo.ppEnabledLayerNames = enabledValidationLayers.data();
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+    }
+    else
+    {
+        createInfo.enabledLayerCount = 0;
+    }
 
     VkResult result = vkCreateInstance(&createInfo, nullptr, &m_handle);
     VK_CHECK(result, "Failed to create VkInstance.");
 
-#ifdef USE_VK_VALIDATION_LAYERS
-    VkResult debugResult = create_debug_utils_messenger(m_handle, &debugCreateInfo, nullptr, &m_debugUtilsMessenger);
-    VK_CHECK(debugResult, "Failed to create debug utils messenger.");
-#endif
+    if( Param_vulkan_debug_utils.get() )
+    {
+        VkResult debugResult = create_debug_utils_messenger(m_handle, &debugCreateInfo, nullptr, &m_debugUtilsMessenger);
+        VK_CHECK(debugResult, "Failed to create debug utils messenger.");
+    }
 
     query_gpus();
 }
 
 Instance::~Instance()
 {
-#ifdef USE_VK_VALIDATION_LAYERS
-    destroy_debug_utils_messenger(m_handle, m_debugUtilsMessenger, nullptr);
-#endif
+    if( Param_vulkan_debug_utils.get() )
+    {
+        destroy_debug_utils_messenger(m_handle, m_debugUtilsMessenger, nullptr);
+    }
     vkDestroyInstance(m_handle, nullptr);
 }
 

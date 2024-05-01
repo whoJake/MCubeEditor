@@ -85,15 +85,16 @@ bool WindowedApplication::create_render_context()
     std::vector<const char*> requestedDeviceExtensions = request_device_extensions();
     requestedDeviceExtensions.push_back("VK_KHR_swapchain");
 
-#ifdef CFG_DEBUG
-    requestedInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-    requestedValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
-    for( const char* requestedLayer : request_validation_layers() )
+    if( Param_vulkan_debug_utils.get() )
     {
-        requestedValidationLayers.push_back(requestedLayer);
+        requestedInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+        requestedValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+        for( const char* requestedLayer : request_validation_layers() )
+        {
+            requestedValidationLayers.push_back(requestedLayer);
+        }
     }
-#endif
     
     for( const char* requiredExt : m_window->get_required_surface_extensions() )
     {

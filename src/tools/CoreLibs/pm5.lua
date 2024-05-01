@@ -184,7 +184,6 @@ project (prj_Graphics)
     filter "configurations:Debug"
         defines
         {
-            "USE_VK_VALIDATION_LAYERS",
         }
 
     filter "configurations:Release"
@@ -241,7 +240,6 @@ project (prj_Framework)
     filter "configurations:Debug"
         defines
         {
-            "USE_VK_VALIDATION_LAYERS",
         }
 
     filter "configurations:Release"
@@ -303,7 +301,6 @@ project (prj_MCubeEditor)
     filter "configurations:Debug"
         defines
         {
-            "USE_VK_VALIDATION_LAYERS",
         }
 
     filter "configurations:Release"

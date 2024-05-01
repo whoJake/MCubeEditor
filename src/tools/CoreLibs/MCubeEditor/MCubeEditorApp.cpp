@@ -333,7 +333,10 @@ std::vector<VkPresentModeKHR> MCubeEditorApp::request_swapchain_present_mode() c
 VkPhysicalDeviceFeatures MCubeEditorApp::request_physical_device_feature_set() const
 {
     VkPhysicalDeviceFeatures features{ };
-    features.fillModeNonSolid = true;
+    if( Param_wireframe.get() )
+    {
+        features.fillModeNonSolid = true;
+    }
     return features;
 }
 

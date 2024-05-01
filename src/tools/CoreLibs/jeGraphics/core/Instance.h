@@ -2,6 +2,8 @@
 
 #include "vkcommon.h"
 
+PARAM(vulkan_debug_utils);
+
 namespace vk
 {
 
@@ -76,10 +78,8 @@ private:
     /* @brief The enabled extensions */
     std::vector<const char*> m_enabledExtensions;
 
-#ifdef USE_VK_VALIDATION_LAYERS
     /* @brief Debug utils messenger used by VK_EXT_Debug_Utils */
     VkDebugUtilsMessengerEXT m_debugUtilsMessenger{ VK_NULL_HANDLE };
-#endif
 
     std::vector<std::unique_ptr<PhysicalDevice>> m_gpus;
 };
