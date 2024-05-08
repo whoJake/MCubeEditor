@@ -29,6 +29,7 @@
 #include "gtx/quaternion.hpp"
 #include "gtx/hash.hpp"
 
+#include "data/fixed_vector.h"
 
 #include "logging/jclog.h"
 #include "pch/logging.h"
