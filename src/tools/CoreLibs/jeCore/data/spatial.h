@@ -120,7 +120,14 @@ public:
 
     inline glm::mat4 as_matrix() const
     {
-        return glm::translate((glm::scale(glm::mat4(1.f), m_scale) * glm::toMat4(m_rotation)), m_position);
+        /*
+        glm::mat4 matrix(1.f);
+        matrix *= glm::toMat4(m_rotation);
+        matrix = glm::translate(matrix, m_position);
+        matrix = glm::scale(matrix, m_scale);
+        */
+
+        return glm::scale(glm::translate(glm::mat4(1.f) * glm::toMat4(m_rotation), m_position), m_scale);
     }
 
     inline void rotate(const glm::quat& rotation)

@@ -1,9 +1,12 @@
 #pragma once
 
-class MarchingCubeLookup
+namespace mcube
+{
+
+class LookupData
 {
 public:
-    MarchingCubeLookup();
+    LookupData();
 
     const std::array<int8_t, 16>& get_edges_for_state(uint8_t state) const;
 
@@ -32,15 +35,17 @@ public:
 private:
     std::array<std::array<int8_t, 16>, 256> m_triangulation;
 public:
-    static MarchingCubeLookup *const instance()
+    static LookupData *const instance()
     {
         if( !s_instance )
         {
-            s_instance = new MarchingCubeLookup();
+            s_instance = new LookupData();
         }
 
         return s_instance;
     }
 private:
-    inline static MarchingCubeLookup* s_instance = nullptr;
+    inline static LookupData* s_instance = nullptr;
 };
+
+} // mcube

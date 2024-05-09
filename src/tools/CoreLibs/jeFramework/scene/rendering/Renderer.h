@@ -21,6 +21,7 @@ struct DebugMaterial
 };
 
 PARAM(wireframe);
+PARAM(disable_backface_culling);
 
 class Renderer
 {

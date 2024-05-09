@@ -46,6 +46,6 @@ private:
     std::unordered_map<glm::ivec3, std::unique_ptr<Chunk>> m_chunks;
     int m_chunksPerAxis{ 0 };
     float m_cursorDistanceFromCamera{ 10.f };
-    float m_cursorScale{ 2.f };
+    float m_cursorScale{ 1.f };
     entid_t m_cursor{ 0 };
 };

@@ -1,6 +1,9 @@
-#include "MarchingCubeLookup.h"
+#include "LookupData.h"
 
-MarchingCubeLookup::MarchingCubeLookup() :
+namespace mcube
+{
+
+LookupData::LookupData() :
     m_triangulation{{
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
         { 0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
@@ -260,7 +263,9 @@ MarchingCubeLookup::MarchingCubeLookup() :
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 } }}
 { }
 
-const std::array<int8_t, 16>& MarchingCubeLookup::get_edges_for_state(uint8_t state) const
+const std::array<int8_t, 16>& LookupData::get_edges_for_state(uint8_t state) const
 {
     return m_triangulation.at(state);
 }
+
+} // mcube

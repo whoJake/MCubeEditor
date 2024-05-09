@@ -4,12 +4,17 @@
 #include "scene/gameplay/Entity.h"
 #include "SceneObject.h"
 
-extern float g_chunkMarchingCubeThreshold;
+#include "mcube/Volume.h"
+
+#define DEFAULT_MARCHING_CUBE_RESOLUTION 16
+#define DEFAULT_MARCHING_CUBE_THRESHOLD 0.5
+
+extern bool g_useMultithreading;
 
 class Chunk : public SceneObject
 {
 public:
-    Chunk(Scene* scene, std::string name, glm::vec3 position, uint16_t resolution, float unitSize);
+    Chunk(Scene* scene, std::string name, glm::vec3 origin, glm::vec3 size);
     Chunk(Chunk&&) = delete;
     Chunk(const Chunk&) = delete;
     Chunk& operator=(Chunk&&) = delete;
@@ -17,38 +22,27 @@ public:
 
     ~Chunk();
     
-    Mesh& mesh();
-
-    Transform& transform();
-
-    void set_point(int x, int y, int z, float value);
-    void set_point(glm::uvec3 pos, float value);
-
-    float get_point(int x, int y, int z) const;
-    float get_point(glm::uvec3 pos) const;
+    Mesh* mesh() const;
+    Transform* transform() const;
 
     void sphere_edit(glm::vec3 pos, float radius, float deltaTime, bool addition);
 
-    void recalculate_mesh();
-    void recalculate_mesh_mt();
-private:
-    void recalculate_point_mesh(glm::uvec3 point,
-                                std::vector<Vertex>& vertexList,
-                                std::mutex* listMutex = nullptr) const;
+    AABoundingBox<float> get_bounds() const;
 
-    size_t coords_to_index(int x,  int y, int z) const;
-    size_t get_resolution() const;
+    glm::vec3 get_origin() const;
+    glm::vec3 get_centre() const;
+private:
+    void create_data_backed_volume(uint32_t resolution = DEFAULT_MARCHING_CUBE_RESOLUTION);
+
+    void set_mesh_to_volume(Blueprint* blueprint = nullptr);
 private:
     std::string m_name;
     bpid_t m_blueprint{ 0 };
     entid_t m_entity{ 0 };
 
-    std::vector<float> m_points;
-    uint16_t m_resolution;
-    bool m_dirty{ true };
-    float m_threshold;
-    float m_unitSize;
-    AABoundingBox<float> m_bounds{ };
-
+    std::unique_ptr<mcube::Volume<float>> m_volume;
+    glm::vec3 m_size;
     glm::vec3 m_colour;
+
+    uint32_t m_currentResolution{ 0 };
 };

@@ -26,3 +26,5 @@ inline void QuitFmt_Internal(const std::source_location& loc, const char* fmt, A
 #define TRAP_EQ(left, right, msg, ...) do{ if((left) == (right)){ BREAKFMT(msg, __VA_ARGS__); } }while(0)
 #define TRAP_GE(left, right, msg, ...) do{ if((left) >= (right)){ BREAKFMT(msg, __VA_ARGS__); } }while(0)
 #define TRAP_LE(left, right, msg, ...) do{ if((left) <= (right)){ BREAKFMT(msg, __VA_ARGS__); } }while(0)
+#define TRAP_GT(left, right, msg, ...) do{ if((left) > (right)){ BREAKFMT(msg, __VA_ARGS__); } }while(0)
+#define TRAP_LT(left, right, msg, ...) do{ if((left) < (right)){ BREAKFMT(msg, __VA_ARGS__); } }while(0)

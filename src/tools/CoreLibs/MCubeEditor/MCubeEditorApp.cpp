@@ -9,22 +9,16 @@
 #include "scene/gameplay/Primitives.h"
 #include "scene/gameplay/Entity.h"
 
+#include "mcube/Volume.h"
+
 PARAM(open_scene);
 
 #define DEFAULT_START_CHUNKS_PER_AXIS 3
 PARAM(start_chunks_per_axis);
 
-#define DEFAULT_CHUNK_RESOLUTION 16
-PARAM(chunk_resolution);
-
-#define DEFAULT_UNIT_SIZE 1
-PARAM(chunk_unit_size);
-
 #define DEFAULT_USE_MULTITHREADING false
 bool g_useMultithreading{ DEFAULT_USE_MULTITHREADING };
 PARAM(use_multithreading);
-
-bool firstFrameHack = true;
 
 MCubeEditorApp::MCubeEditorApp() :
     WindowedApplication()
@@ -98,15 +92,6 @@ void MCubeEditorApp::update(double deltaTime)
 
     m_scene->resolve_creation_queue();
     m_scene->resolve_destruction_queue();
-
-    if( firstFrameHack )
-    {
-        firstFrameHack = false;
-        for( auto& chunk : m_chunks )
-        {
-            chunk.second->recalculate_mesh();
-        }
-    }
 
     m_scene->sync_proxies();
     Input::tick();
@@ -186,17 +171,6 @@ void MCubeEditorApp::parse_input(double deltaTime)
     if( Input::get_key_down(KeyCode::LeftShift) )
         movement.y -= 1;
 
-    if( Input::get_key_down(KeyCode::Down) )
-    {
-        g_chunkMarchingCubeThreshold -= 0.2f * static_cast<float>(deltaTime);
-        g_chunkMarchingCubeThreshold = std::clamp(g_chunkMarchingCubeThreshold, 0.f, 1.f);
-    }
-    if( Input::get_key_down(KeyCode::Up) )
-    {
-        g_chunkMarchingCubeThreshold += 0.2f * static_cast<float>(deltaTime);
-        g_chunkMarchingCubeThreshold = std::clamp(g_chunkMarchingCubeThreshold, 0.f, 1.f);
-    }
-
     float speed = 10.f;
     movement *= speed * deltaTime;
 
@@ -214,7 +188,7 @@ void MCubeEditorApp::parse_input(double deltaTime)
 
     if( Input::get_mouse_button_down(1) )
     {
-        float sensitivity = .5f;
+        float sensitivity = .2f;
 
         float mouseX = static_cast<float>(sensitivity * Input::get_mouse_move_horizontal());
         float mouseY = static_cast<float>(sensitivity * Input::get_mouse_move_vertical());
@@ -245,42 +219,19 @@ void MCubeEditorApp::parse_input(double deltaTime)
 
 void MCubeEditorApp::update_scene(double deltaTime)
 {
-    if( firstFrameHack )
-        return;
-
     // Update cursor
     Entity* cursorEntity = m_scene->get_entity(m_cursor);
-    cursorEntity->transform().position() = get_cursor_position();
-    //cursorEntity->transform().scale() = glm::vec3(1.f, 1.f, 1.f) * m_cursorScale;
+    if( cursorEntity )
+    {
+        cursorEntity->transform().position() = get_cursor_position();
+        cursorEntity->transform().scale() = glm::vec3(m_cursorScale, m_cursorScale, m_cursorScale);
+    }
 
     if( Input::get_mouse_button_down(0) || Input::get_mouse_button_down(2) )
     {
         for( auto& chunk : m_chunks )
         {
             chunk.second->sphere_edit(get_cursor_position(), m_cursorScale, static_cast<float>(deltaTime), !Input::get_mouse_button_down(2));
-        }
-    }
-
-    // Update chunks
-    if( g_useMultithreading )
-    {
-        glm::ivec3 offset{ m_chunksPerAxis / 2, m_chunksPerAxis / 2, m_chunksPerAxis / 2 };
-        std::function<void(DispatchState)> updateChunksFunc = [&, offset](DispatchState state){
-            glm::ivec3 args{ (state.jobIndex % m_chunksPerAxis), (state.jobIndex / (m_chunksPerAxis)) % m_chunksPerAxis, state.jobIndex / (m_chunksPerAxis * m_chunksPerAxis) };
-
-            if( args.x >= m_chunksPerAxis || args.y >= m_chunksPerAxis || args.z >= m_chunksPerAxis )
-                return;
-
-            m_chunks.at(args - offset)->recalculate_mesh();
-        };
-
-        JobDispatch::dispatch_and_wait(static_cast<uint32_t>(m_chunks.size()), 1, updateChunksFunc);
-    }
-    else
-    {
-        for( auto& chunk : m_chunks )
-        {
-            chunk.second->recalculate_mesh_mt();
         }
     }
 }
@@ -298,25 +249,11 @@ void MCubeEditorApp::create_chunk(glm::ivec3 index)
         return;
     }
 
-    int chunkResolution{ 0 };
-    if( !Param_chunk_resolution.get_int(&chunkResolution) )
-    {
-        chunkResolution = DEFAULT_CHUNK_RESOLUTION;
-    }
-    chunkResolution = std::max(chunkResolution, 2);
-
-    float unitSize{ 0 };
-    if( !Param_chunk_resolution.get_float(&unitSize) )
-    {
-        unitSize = DEFAULT_UNIT_SIZE;
-    }
-    unitSize = std::max(unitSize, 0.01f);
-
-    float chunkSize = chunkResolution * unitSize;
-    glm::vec3 centre{ index.x * (chunkSize - 1), index.y * (chunkSize-1), index.z * (chunkSize-1) };
+    glm::vec3 size{ 5.f, 5.f, 5.f };
+    glm::vec3 origin{ index.x * size.x, index.y * size.y, index.z * size.z };
 
     m_chunks.insert(std::pair(index,
-        std::make_unique<Chunk>(m_scene.get(), std::format("chunk:{}-{}-{}", index.x, index.y, index.z), centre, chunkResolution, unitSize)));
+        std::make_unique<Chunk>(m_scene.get(), std::format("chunk:{}-{}-{}", index.x, index.y, index.z), origin, size)));
 }
 
 glm::vec3 MCubeEditorApp::get_cursor_position() const

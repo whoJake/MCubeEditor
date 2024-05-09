@@ -181,6 +181,7 @@ void Renderer::build_debug_material()
 
     vk::RasterizationState rast{ };
     rast.polygonMode = Param_wireframe.get() ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
+    rast.cullMode = Param_disable_backface_culling.get() ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
 
     m_debugMaterial.pipelineState.set_vertex_input_state(inputStage);
     m_debugMaterial.pipelineState.set_rasterization_state(rast);
