@@ -71,7 +71,7 @@ void Chunk::sphere_edit(glm::vec3 pos, float radius, float deltaTime, bool addit
     }
 
     // transform sphere to local
-    m_volume->add_local_sphere((pos - get_origin()) / m_size, radius / m_size.x, deltaTime * 10.f, g_useMultithreading);
+    m_volume->add_local_sphere((pos - get_origin()) / m_size, radius / m_size.x, deltaTime * 10.f * (addition ? 1.f : -1.f), g_useMultithreading);
 
     set_mesh_to_volume();
 }
@@ -162,4 +162,5 @@ void Chunk::set_mesh_to_volume(Blueprint* blueprint)
     }
 
     bpmesh->set_indices(indices);
+    bpmesh->recalculate_normals();
 }

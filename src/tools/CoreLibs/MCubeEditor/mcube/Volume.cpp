@@ -16,8 +16,6 @@ Volume<T>::Volume(glm::uvec3 dimensions, T minValue, T maxValue, T threshold) :
 {
     TRAP_LT(threshold, minValue, "Threshold is lower than minimum value.");
     TRAP_GT(threshold, maxValue, "Threshold is greater than maximum value.");
-
-    add_local_sphere({ 0.5f, 0.5f, 0.5f }, 0.5f, 1.f);
 }
 
 template<typename T>
@@ -242,8 +240,6 @@ TriangleData Volume<T>::get_cube_triangles(glm::uvec3 origin, const std::array<i
     LookupData* lookup = LookupData::instance();
     TriangleData retval{ };
 
-    T treshold = interpolate ? m_threshold : (m_minValue + m_maxValue) / static_cast<T>(2);
-
     for( size_t edge = 0; edge < 16; edge += 3 )
     {
         if( edges[edge] == -1 )
@@ -260,7 +256,10 @@ TriangleData Volume<T>::get_cube_triangles(glm::uvec3 origin, const std::array<i
         glm::uvec3 eAvB = origin + lookup->get_corner_offset(eA.second);
 
         glm::vec3 eAVertex{ };
-        float edgeInterp = inverse_lerp(treshold, at(eAvA), at(eAvB));
+        float edgeInterp = interpolate
+            ? inverse_lerp(m_threshold, at(eAvA), at(eAvB))
+            : 0.5f;
+
         eAVertex = lerp_points(loc_to_local(eAvA), loc_to_local(eAvB), edgeInterp);
 
         // edge B
@@ -268,7 +267,10 @@ TriangleData Volume<T>::get_cube_triangles(glm::uvec3 origin, const std::array<i
         glm::uvec3 eBvB = origin + lookup->get_corner_offset(eB.second);
 
         glm::vec3 eBVertex{ };
-        edgeInterp = inverse_lerp(treshold, at(eBvA), at(eBvB));
+        edgeInterp = interpolate
+            ? inverse_lerp(m_threshold, at(eBvA), at(eBvB))
+            : 0.5f;
+
         eBVertex = lerp_points(loc_to_local(eBvA), loc_to_local(eBvB), edgeInterp);
 
         // edge C
@@ -276,7 +278,10 @@ TriangleData Volume<T>::get_cube_triangles(glm::uvec3 origin, const std::array<i
         glm::uvec3 eCvB = origin + lookup->get_corner_offset(eC.second);
 
         glm::vec3 eCVertex{ };
-        edgeInterp = inverse_lerp(treshold, at(eCvA), at(eCvB));
+        edgeInterp = interpolate
+            ? inverse_lerp(m_threshold, at(eCvA), at(eCvB))
+            : 0.5f;
+
         eCVertex = lerp_points(loc_to_local(eCvA), loc_to_local(eCvB), edgeInterp);
 
         retval.vertices.push_back(eAVertex);

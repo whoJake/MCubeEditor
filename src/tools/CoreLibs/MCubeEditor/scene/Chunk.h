@@ -6,7 +6,7 @@
 
 #include "mcube/Volume.h"
 
-#define DEFAULT_MARCHING_CUBE_RESOLUTION 16
+#define DEFAULT_MARCHING_CUBE_RESOLUTION 8
 #define DEFAULT_MARCHING_CUBE_THRESHOLD 0.5
 
 extern bool g_useMultithreading;

@@ -12,5 +12,5 @@ void main()
   vec3 lightDirection = normalize(lightPosition - in_frag_position);
   float diffuse = clamp(max(dot(in_normal, lightDirection), 0.0), 0.4, 1.0);
 
-  out_color = in_color;// * diffuse;
+  out_color = in_color * diffuse;
 }
