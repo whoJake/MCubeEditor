@@ -9,7 +9,7 @@
 #include "scene/gameplay/Primitives.h"
 #include "scene/gameplay/Entity.h"
 
-#include "mcube/Volume.h"
+#include "core/Instance.h"
 
 PARAM(open_scene);
 
@@ -41,8 +41,8 @@ void MCubeEditorApp::on_app_startup()
         }
     }
 
-    initialize_scene();
     JobDispatch::initialize();
+    initialize_scene();
 
     m_renderer = std::make_unique<Renderer>(get_render_context());
 
@@ -227,11 +227,11 @@ void MCubeEditorApp::update_scene(double deltaTime)
         cursorEntity->transform().scale() = glm::vec3(m_cursorScale, m_cursorScale, m_cursorScale);
     }
 
-    if( Input::get_mouse_button_down(0) || Input::get_mouse_button_down(2) )
+    if( Input::get_mouse_button_down(0) )
     {
         for( auto& chunk : m_chunks )
         {
-            chunk.second->sphere_edit(get_cursor_position(), m_cursorScale, static_cast<float>(deltaTime), !Input::get_mouse_button_down(2));
+            chunk.second->sphere_edit(get_cursor_position(), m_cursorScale, static_cast<float>(deltaTime), !Input::get_key_down(KeyCode::LeftControl));
         }
     }
 }
@@ -249,7 +249,7 @@ void MCubeEditorApp::create_chunk(glm::ivec3 index)
         return;
     }
 
-    glm::vec3 size{ 5.f, 5.f, 5.f };
+    glm::vec3 size{ 10.f, 10.f, 10.f };
     glm::vec3 origin{ index.x * size.x, index.y * size.y, index.z * size.z };
 
     m_chunks.insert(std::pair(index,

@@ -2,3 +2,4 @@
 -marching_cube_threshold=0.5
 -detect_worker_thread_count
 -vulkan_debug_utils
+-use_multithreading

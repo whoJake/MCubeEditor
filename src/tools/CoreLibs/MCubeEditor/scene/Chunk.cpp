@@ -3,8 +3,6 @@
 #include "mcube/LookupData.h"
 #include "threading/JobDispatcher.h"
 
-#include "mcube/Volume.cpp"
-
 PARAM(marching_cube_threshold);
 PARAM(disable_marching_cube_interpolation);
 PARAM(marching_cube_resolution);

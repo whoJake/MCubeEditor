@@ -29,6 +29,11 @@ public:
     Renderer(vk::RenderContext& context);
     ~Renderer();
 
+    inline const vk::RenderPass& get_render_pass() const
+    {
+        return *m_debugMaterial.renderPass;
+    }
+
     void dispatch_render(SceneProxies scene, const std::vector<Camera*>& cameras, uint32_t* fence);
 private:
     void build_debug_material();
