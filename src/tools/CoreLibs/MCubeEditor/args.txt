@@ -1,5 +1,4 @@
 -start_chunks_per_axis=8
 -marching_cube_threshold=0.5
 -detect_worker_thread_count
--vulkan_debug_utils
 -use_multithreading
