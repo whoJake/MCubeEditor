@@ -17,3 +17,11 @@ Run included pm5.lua through Premake5, tested on VisualStudio2022.
 Build and run MCubeEditor csproj-
 
 -- Not tested on any pc other than mine though.
+
+## Controls
+- wasd to move
+- shift/space to move up and down
+- Holding right click + move mouse to look
+- q and e to move "cursor" closer or further away from camera
+- left click: add volume
+- ctrl + left click: remove volume
