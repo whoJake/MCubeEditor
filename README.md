@@ -7,7 +7,6 @@ Small editor that can build and destroy a volume represented by the marching cub
 ### Features include
 - Freecam controls used to add and destroy a marching cube volume.
 - Basic job system to speed up volume re-meshing.
-- Seperate main and render threads.
 - Basic diffuse lighting.
 - Vulkan backend implementation inspired heavily by Sascha Willems examples https://github.com/SaschaWillems/Vulkan
 - Dynamic shader parsing into render passes.
